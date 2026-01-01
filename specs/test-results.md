@@ -11,12 +11,27 @@
 
 ## ユニットテスト結果
 
+### テスト実行結果（2026-01-01）
+
+```
+PASS src/__tests__/components/SDScale.test.tsx
+  SDScale
+    ✓ renders correctly (26 ms)
+    ✓ calls onChange when slider value changes (24 ms)
+    ✓ displays correct value label (5 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        0.409 s
+```
+
 ### テスト対象コンポーネント
 
 #### SDScale コンポーネント
-- ✅ レンダリングテスト
-- ✅ onChange コールバックテスト
-- ✅ 値ラベル表示テスト
+- ✅ レンダリングテスト - **PASS**
+- ✅ onChange コールバックテスト - **PASS**
+- ✅ 値ラベル表示テスト - **PASS**
 
 ### テスト実行コマンド
 ```bash
@@ -24,8 +39,9 @@ npm test
 ```
 
 ### カバレッジ
-- 現在のカバレッジ: 部分実装
+- 現在のカバレッジ: 部分実装（SDScaleコンポーネント）
 - 目標カバレッジ: 80%以上
+- 次のステップ: 他の主要コンポーネントのテスト追加
 
 ## E2Eテスト
 
@@ -63,9 +79,23 @@ npm test
   - Best Practices: 90以上
   - SEO: 90以上
 
+## テスト環境の改善
+
+### 実装済み
+- ✅ Jest設定完了
+- ✅ ResizeObserverモック実装
+- ✅ IntersectionObserverモック実装
+- ✅ window.matchMediaモック実装
+- ✅ Audioモック実装
+
+### テスト修正
+- SDScaleコンポーネントのテストを修正
+- Radix UIスライダーの複雑な実装に対応
+
 ## 更新履歴
 
 | 日付 | バージョン | 更新内容 |
 |------|-----------|----------|
 | 2026-01-01 | 1.0.0 | 初版作成 |
+| 2026-01-01 | 1.1.0 | テスト実行成功、結果を反映 |
 
