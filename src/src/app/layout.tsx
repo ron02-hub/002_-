@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_JP, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 const notoSansJP = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${notoSansJP.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );
