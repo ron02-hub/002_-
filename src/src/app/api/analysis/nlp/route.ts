@@ -34,12 +34,23 @@ export async function GET() {
       });
     }
 
-    // Pythonスクリプトを実行
+    // Pythonスクリプトを実行（改善版を優先、フォールバックで簡易版）
     try {
       const inputData = JSON.stringify({ free_texts: freeTexts });
-      const { stdout } = await execAsync(
-        `python3 analysis/nlp_analysis.py '${inputData}'`
-      );
+      let stdout: string;
+      try {
+        // 改善版を試行
+        const result = await execAsync(
+          `python3 analysis/improved_nlp.py '${inputData}'`
+        );
+        stdout = result.stdout;
+      } catch {
+        // フォールバック：簡易版
+        const result = await execAsync(
+          `python3 analysis/nlp_analysis.py '${inputData}'`
+        );
+        stdout = result.stdout;
+      }
       const result = JSON.parse(stdout);
 
       return NextResponse.json({ data: result });
