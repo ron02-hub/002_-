@@ -1,36 +1,206 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EV走行音アンケートアプリケーション
 
-## Getting Started
+🚗 電気自動車（EV）走行音のユーザー印象を科学的に評価するWebアンケートシステム
 
-First, run the development server:
+## 📋 プロジェクト概要
+
+本プロジェクトは、EV走行音に対するユーザーの深層心理を探索し、購買意欲向上につながるサウンドデザインの知見を得ることを目的としたWebアンケートアプリケーションです。
+
+## 🚀 クイックスタート
+
+### 必要な環境
+
+- Node.js 18以上
+- npm または yarn
+- PostgreSQL（Supabase推奨）
+
+### セットアップ
 
 ```bash
+# 依存関係のインストール
+npm install
+
+# 環境変数の設定
+cp .env.example .env.local
+# .env.local を編集してデータベース接続情報を設定
+
+# Prismaクライアントの生成
+npm run db:generate
+
+# データベースマイグレーション（初回のみ）
+npm run db:migrate
+
+# シードデータの投入
+npm run db:seed
+
+# 開発サーバーの起動
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+アプリケーションは [http://localhost:3000](http://localhost:3000) で起動します。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 プロジェクト構造
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── prisma/
+│   ├── schema.prisma      # データベーススキーマ
+│   └── seed.ts            # シードデータ
+├── src/
+│   ├── app/                # Next.js App Router
+│   │   ├── api/            # API Routes
+│   │   ├── survey/         # アンケートページ
+│   │   └── page.tsx        # ランディングページ
+│   ├── components/
+│   │   ├── audio/          # 音声再生コンポーネント
+│   │   ├── layout/         # レイアウトコンポーネント
+│   │   ├── responsive/     # レスポンシブコンポーネント
+│   │   └── ui/             # shadcn/uiコンポーネント
+│   ├── hooks/              # カスタムフック
+│   ├── lib/                # ユーティリティ
+│   ├── stores/             # Zustand状態管理
+│   └── types/               # TypeScript型定義
+└── public/                  # 静的ファイル
+```
 
-## Learn More
+## 🛠 技術スタック
 
-To learn more about Next.js, take a look at the following resources:
+### フロントエンド
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS** + **shadcn/ui**
+- **Zustand** (状態管理)
+- **React Hook Form** + **Zod** (フォーム)
+- **Framer Motion** (アニメーション)
+- **Howler.js** (音声再生)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### バックエンド
+- **Next.js API Routes**
+- **Prisma** (ORM)
+- **PostgreSQL** (Supabase)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 開発ツール
+- **ESLint** + **Prettier**
+- **TypeScript**
 
-## Deploy on Vercel
+## 📝 主要機能
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 実装済み
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- ✅ ランディングページ
+- ✅ 同意フォーム
+- ✅ 属性入力フォーム
+- ✅ 音声チェック画面
+- ✅ 音声再生コンポーネント（波形表示付き）
+- ✅ 進捗バー・ナビゲーション
+- ✅ レスポンシブ対応
+
+### 開発中
+
+- 🚧 音声評価画面（SD法）
+- 🚧 トライアド比較画面（評価グリッド法）
+- 🚧 デプスインタビュー画面
+- 🚧 完了画面
+
+## 🗄 データベース
+
+### セットアップ
+
+1. [Supabase](https://supabase.com)でプロジェクトを作成
+2. `.env.local`に接続情報を設定
+3. マイグレーションを実行：
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+### Prismaコマンド
+
+```bash
+# クライアント生成
+npm run db:generate
+
+# マイグレーション作成・適用
+npm run db:migrate
+
+# シードデータ投入
+npm run db:seed
+
+# Prisma Studio起動
+npm run db:studio
+```
+
+## 🎨 コンポーネント
+
+### AudioPlayer
+高機能な音声再生コンポーネント。波形表示、音量調整、シーク機能を搭載。
+
+```tsx
+import { AudioPlayer } from '@/components/audio/AudioPlayer';
+
+<AudioPlayer
+  src="/audio/sample.mp3"
+  title="サンプル音声"
+  onPlayComplete={() => console.log('再生完了')}
+/>
+```
+
+### SurveyLayout
+アンケート用の共通レイアウト。進捗バー、ナビゲーションを内蔵。
+
+```tsx
+import { SurveyLayout } from '@/components/layout/SurveyLayout';
+
+<SurveyLayout
+  progress={50}
+  title="アンケートタイトル"
+  showBack
+>
+  {/* コンテンツ */}
+</SurveyLayout>
+```
+
+## 📊 状態管理
+
+Zustandを使用した状態管理。`useSurveyStore`でアンケートの状態を管理。
+
+```tsx
+import { useSurveyStore } from '@/stores/surveyStore';
+
+const { currentPhase, progress, setPhase } = useSurveyStore();
+```
+
+## 🔧 開発コマンド
+
+```bash
+# 開発サーバー起動
+npm run dev
+
+# ビルド
+npm run build
+
+# 本番起動
+npm start
+
+# リント
+npm run lint
+npm run lint:fix
+
+# フォーマット
+npm run format
+npm run format:check
+```
+
+## 📚 ドキュメント
+
+詳細な仕様書は親ディレクトリの`specs/`フォルダを参照してください：
+
+- [要件定義書](../specs/requirements.md)
+- [設計書](../specs/design.md)
+- [アーキテクチャ設計書](../specs/architecture.md)
+- [タスク一覧](../specs/tasks.md)
+
+## 📄 ライセンス
+
+Private - All rights reserved

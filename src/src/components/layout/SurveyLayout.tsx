@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Progress } from '@/components/ui/progress';
+import { ProgressBar } from './ProgressBar';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -62,11 +62,11 @@ export function SurveyLayout({
                 </span>
               </div>
             </div>
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-500 tabular-nums">
               {progress > 0 && `${progress}% 完了`}
             </div>
           </div>
-          <Progress value={progress} className="h-1.5" />
+          <ProgressBar value={progress} size="md" showLabel={false} />
         </div>
       </header>
 

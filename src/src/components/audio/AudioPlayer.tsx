@@ -3,6 +3,7 @@
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { AudioWaveform } from './AudioWaveform';
 import { 
   Play, 
   Pause, 
@@ -159,8 +160,14 @@ export function AudioPlayer({
         <div className="w-10" /> {/* スペーサー */}
       </div>
 
-      {/* プログレスバー */}
+      {/* 波形表示 */}
       <div className="space-y-2">
+        <AudioWaveform
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration}
+          className="mb-2"
+        />
         <Slider
           value={[progress]}
           onValueChange={handleSeek}

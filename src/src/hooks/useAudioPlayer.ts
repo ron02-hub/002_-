@@ -66,6 +66,7 @@ export function useAudioPlayer(
       src: [src],
       html5: true,
       volume: volume,
+      preload: true,
       onload: () => {
         setIsLoading(false);
         setIsLoaded(true);
@@ -75,6 +76,9 @@ export function useAudioPlayer(
       onend: () => {
         setIsPlaying(false);
         setCurrentTime(0);
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
         onEnd?.();
       },
       onplay: () => {
@@ -114,7 +118,7 @@ export function useAudioPlayer(
       }
       howl.unload();
     };
-  }, [src]);
+  }, [src, onLoad, onEnd, onError]);
 
   // 再生状態が変わったら進捗更新を開始/停止
   useEffect(() => {
