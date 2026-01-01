@@ -5,6 +5,7 @@ import { SDRadarChart } from '@/components/analysis/SDRadarChart';
 import { PurchaseIntentHistogram } from '@/components/analysis/PurchaseIntentHistogram';
 import { CrossTabulation } from '@/components/analysis/CrossTabulation';
 import { ValueTree } from '@/components/analysis/ValueTree';
+import { FactorAnalysisChart } from '@/components/analysis/FactorAnalysisChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw } from 'lucide-react';
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
   const [purchaseData, setPurchaseData] = useState<Array<{ audioName: string; distribution: number[] }>>([]);
   const [crossTabData, setCrossTabData] = useState<Array<{ row: string; columns: Record<string, number | string> }>>([]);
   const [valueTreeData, setValueTreeData] = useState<ValueNode[]>([]);
+  const [factorAnalysisData, setFactorAnalysisData] = useState<Array<{ name: string; loadings: Array<{ scale: string; loading: number }> }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +46,11 @@ export default function AdminDashboard() {
       const treeResponse = await fetch('/api/analysis/value-tree');
       const treeResult = await treeResponse.json();
       setValueTreeData(treeResult.data || []);
+
+      // 因子分析データ取得
+      const factorResponse = await fetch('/api/analysis/factor-analysis');
+      const factorResult = await factorResponse.json();
+      setFactorAnalysisData(factorResult.data?.factors || []);
     } catch (error) {
       console.error('分析データの取得に失敗しました:', error);
     } finally {
@@ -151,6 +158,11 @@ export default function AdminDashboard() {
         {/* クロス集計表 */}
         {crossTabData.length > 0 && (
           <CrossTabulation data={crossTabData} />
+        )}
+
+        {/* 因子分析 */}
+        {factorAnalysisData.length > 0 && (
+          <FactorAnalysisChart data={factorAnalysisData} title="因子分析結果" />
         )}
 
         {/* 価値ツリー */}
