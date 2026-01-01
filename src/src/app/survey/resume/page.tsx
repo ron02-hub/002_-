@@ -9,7 +9,7 @@ import { useSurveyStore } from '@/stores/surveyStore';
 import { useSurveyPersistence } from '@/hooks/useSurveyPersistence';
 import { Clock, Play, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import { ja } from 'date-fns/locale/ja';
 
 export default function ResumePage() {
   const router = useRouter();
