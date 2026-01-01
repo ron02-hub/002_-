@@ -1,0 +1,136 @@
+// Prisma Schema for EV Sound Survey Application
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 回答者
+model Respondent {
+  id                String    @id @default(cuid())
+  sessionId         String    @unique
+  experimentGroup   String    // A or B
+  ageGroup          String
+  gender            String
+  prefecture        String?
+  drivingExperience Int       // 運転歴（年）
+  evOwnership       Boolean   @default(false)
+  audioSensitivity  Int       // 音への感度 (1-5)
+  consentGiven      Boolean   @default(false)
+  headphoneCheck    Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  completedAt       DateTime?
+
+  evaluations   Evaluation[]
+  triads        Triad[]
+  constructs    Construct[]
+  interviewLogs InterviewLog[]
+}
+
+// 音声サンプル
+model AudioSample {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  fileUrl     String
+  duration    Int      // 秒数
+  category    String   // 車種カテゴリ
+  metadata    Json?    // 追加メタデータ
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  evaluations Evaluation[]
+  triadsAs1   Triad[]      @relation("Audio1")
+  triadsAs2   Triad[]      @relation("Audio2")
+  triadsAs3   Triad[]      @relation("Audio3")
+}
+
+// SD法評価
+model Evaluation {
+  id                String   @id @default(cuid())
+  respondentId      String
+  audioSampleId     String
+  presentationOrder Int      // 提示順序
+  sdScores          Json     // { quiet: 2, pleasant: 1, ... }
+  purchaseIntent    Int      // 購買意欲 (1-7)
+  freeText          String?  // 自由記述
+  responseTimeMs    Int?     // 回答時間
+  createdAt         DateTime @default(now())
+
+  respondent  Respondent  @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+  audioSample AudioSample @relation(fields: [audioSampleId], references: [id])
+
+  @@unique([respondentId, audioSampleId])
+}
+
+// トライアド比較
+model Triad {
+  id               String   @id @default(cuid())
+  respondentId     String
+  audio1Id         String
+  audio2Id         String
+  audio3Id         String
+  similarPair      String[] // [audio1Id, audio2Id]
+  differentOne     String   // 異なる1つのID
+  similarityReason String   // 類似理由
+  differenceReason String   // 相違理由
+  triadOrder       Int      // トライアド順序
+  createdAt        DateTime @default(now())
+
+  respondent Respondent  @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+  audio1     AudioSample @relation("Audio1", fields: [audio1Id], references: [id])
+  audio2     AudioSample @relation("Audio2", fields: [audio2Id], references: [id])
+  audio3     AudioSample @relation("Audio3", fields: [audio3Id], references: [id])
+  constructs Construct[]
+}
+
+// コンストラクト（評価グリッド法で抽出）
+model Construct {
+  id            String   @id @default(cuid())
+  triadId       String
+  respondentId  String
+  constructText String   // コンストラクト文
+  poleLeft      String?  // 左極
+  poleRight     String?  // 右極
+  ladderUp      Json?    // 上位概念リスト
+  ladderDown    Json?    // 下位概念リスト
+  level         String   // terminal, instrumental, functional, physical
+  parentId      String?  // 親コンストラクトID
+  createdAt     DateTime @default(now())
+
+  triad      Triad       @relation(fields: [triadId], references: [id], onDelete: Cascade)
+  respondent Respondent  @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+  parent     Construct?  @relation("ConstructHierarchy", fields: [parentId], references: [id])
+  children   Construct[] @relation("ConstructHierarchy")
+}
+
+// インタビューログ
+model InterviewLog {
+  id             String   @id @default(cuid())
+  respondentId   String
+  questionId     String   // 質問識別子
+  questionText   String   // 質問テキスト
+  responseText   String   // 回答テキスト
+  sentimentScore Float?   // 感情スコア (-1 to 1)
+  keywords       Json?    // 抽出キーワード
+  depthLevel     Int      // 深度レベル (0-3)
+  topic          String   // トピック (favorite, purchase, ideal)
+  responseTimeMs Int?     // 回答時間
+  createdAt      DateTime @default(now())
+
+  respondent Respondent @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+}
+
+// 管理者
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("viewer") // admin, editor, viewer
+  createdAt DateTime @default(now())
+}
+
