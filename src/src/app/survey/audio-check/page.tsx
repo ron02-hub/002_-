@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SurveyLayout } from '@/components/layout/SurveyLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AudioPlayer } from '@/components/audio/AudioPlayer';
+import { MediaPlayer } from '@/components/media/MediaPlayer';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { motion } from 'framer-motion';
 import { 
@@ -37,15 +37,15 @@ export default function AudioCheckPage() {
     }
   };
 
-  // テスト用の音声URL（実際は適切な音声ファイルを用意）
-  const testAudioUrl = '/audio/samples/test-tone.mp3';
+  // テスト用の音声URL
+  const testAudioUrl = '/audio/samples/sample-a.mp3';
 
   return (
     <SurveyLayout
       progress={12}
       showBack
-      title="音声の確認"
-      subtitle="アンケートを始める前に、音声が正しく再生されることを確認します"
+      title="動画・音声の確認"
+      subtitle="アンケートを始める前に、動画・音声が正しく再生されることを確認します"
     >
       <div className="space-y-6">
         {/* ヘッドホン推奨 */}
@@ -84,25 +84,27 @@ export default function AudioCheckPage() {
               <div className="flex items-center gap-2">
                 <Volume2 className="w-5 h-5 text-emerald-600" />
                 <h2 className="font-semibold text-slate-800">
-                  Step 1: テスト音声を再生
+                  Step 1: テスト動画を再生
                 </h2>
               </div>
 
               <p className="text-slate-600">
-                下の再生ボタンを押して、テスト音声をお聴きください。
-                適切な音量に調整してください。
+                下の再生ボタンを押して、テスト動画を再生してください。
+                動画と音声が正しく再生されることを確認し、適切な音量に調整してください。
               </p>
 
-              <AudioPlayer
-                src={testAudioUrl}
-                title="テスト音声"
+              <MediaPlayer
+                src={testMediaUrl}
+                title="テスト動画"
                 onPlayComplete={handlePlayComplete}
+                mediaType="video"
+                showVideo={true}
               />
 
               {!hasPlayed && (
                 <p className="text-sm text-amber-600 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
-                  音声を最後まで再生してください
+                  動画を最後まで再生してください
                 </p>
               )}
             </CardContent>
@@ -120,7 +122,7 @@ export default function AudioCheckPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                 <h2 className="font-semibold text-slate-800">
-                  Step 2: 音声は聞こえましたか？
+                  Step 2: 動画・音声は正常に再生されましたか？
                 </h2>
               </div>
 
@@ -171,12 +173,13 @@ export default function AudioCheckPage() {
                   className="p-4 bg-amber-50 border border-amber-200 rounded-lg"
                 >
                   <h4 className="font-medium text-amber-800 mb-2">
-                    音声が聞こえない場合
+                    動画・音声が再生されない場合
                   </h4>
                   <ul className="text-sm text-amber-700 space-y-1">
                     <li>• デバイスの音量が適切か確認してください</li>
                     <li>• ヘッドホン/イヤホンが正しく接続されているか確認してください</li>
                     <li>• ブラウザの音声設定がミュートになっていないか確認してください</li>
+                    <li>• 動画コーデック（H.264など）がサポートされているか確認してください</li>
                     <li>• 別のブラウザでお試しください</li>
                   </ul>
                 </motion.div>
@@ -198,7 +201,7 @@ export default function AudioCheckPage() {
             size="lg"
             className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-medium disabled:opacity-50"
           >
-            音声評価を開始する
+            動画評価を開始する
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         </motion.div>

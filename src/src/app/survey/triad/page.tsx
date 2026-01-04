@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { AudioPlayerCompact } from '@/components/audio/AudioPlayerCompact';
+import { MediaPlayer } from '@/components/media/MediaPlayer';
+import { getMediaUrl, getMediaType } from '@/lib/mediaFiles';
 import { NavigationButtons } from '@/components/layout/NavigationButtons';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { generateTriads, shuffleTriadOrder } from '@/lib/triad';
@@ -147,27 +148,35 @@ export default function TriadPage() {
           className="space-y-4"
         >
           <div className="grid gap-4">
-            <AudioPlayerCompact
-              src={audio1.fileUrl}
+            <MediaPlayer
+              src={getMediaUrl(audio1.fileUrl)}
               title={audio1.name}
               onPlayComplete={() => {
-                // すべて再生されたかチェック
                 setHasPlayedAll(true);
               }}
+              compact={true}
+              mediaType={getMediaType(audio1.fileUrl)}
+              showVideo={false}
             />
-            <AudioPlayerCompact
-              src={audio2.fileUrl}
+            <MediaPlayer
+              src={getMediaUrl(audio2.fileUrl)}
               title={audio2.name}
               onPlayComplete={() => {
                 setHasPlayedAll(true);
               }}
+              compact={true}
+              mediaType={getMediaType(audio2.fileUrl)}
+              showVideo={false}
             />
-            <AudioPlayerCompact
-              src={audio3.fileUrl}
+            <MediaPlayer
+              src={getMediaUrl(audio3.fileUrl)}
               title={audio3.name}
               onPlayComplete={() => {
                 setHasPlayedAll(true);
               }}
+              compact={true}
+              mediaType={getMediaType(audio3.fileUrl)}
+              showVideo={false}
             />
           </div>
         </motion.div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+// 後方互換性のため、MediaPlayerをエクスポート
+export { MediaPlayer as AudioPlayer } from '../media/MediaPlayer';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { AudioWaveform } from './AudioWaveform';

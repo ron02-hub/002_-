@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SurveyLayout } from '@/components/layout/SurveyLayout';
-import { AudioPlayer } from '@/components/audio/AudioPlayer';
+import { MediaPlayer } from '@/components/media/MediaPlayer';
+import { getMediaUrl, getMediaType } from '@/lib/mediaFiles';
 import { SDScaleForm } from '@/components/survey/SDScaleForm';
 import { PurchaseIntentScale } from '@/components/survey/PurchaseIntentScale';
 import { Card, CardContent } from '@/components/ui/card';
@@ -57,6 +58,8 @@ export default function EvaluationPage() {
     addEvaluation,
     nextAudio,
     getProgress,
+    setAudioSamples,
+    setAudioOrder,
   } = useSurveyStore();
 
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -80,16 +83,25 @@ export default function EvaluationPage() {
   const purchaseIntent = watch('purchaseIntent');
   const freeText = watch('freeText');
 
+  const { setAudioSamples, setAudioOrder } = useSurveyStore();
+
   useEffect(() => {
     // 音声サンプルが設定されていない場合は取得
     if (audioSamples.length === 0) {
       fetch('/api/audio/samples')
         .then((res) => res.json())
         .then((data) => {
-          // ストアに設定する処理が必要
+          // ストアに設定
+          setAudioSamples(data);
+          // ランダム順序を設定
+          const order = data.map((s: { id: string }) => s.id).sort(() => Math.random() - 0.5);
+          setAudioOrder(order);
+        })
+        .catch((error) => {
+          console.error('Failed to load audio samples:', error);
         });
     }
-  }, [audioSamples.length]);
+  }, [audioSamples.length, setAudioSamples, setAudioOrder]);
 
   const onSubmit = (data: EvaluationFormData) => {
     if (!currentAudioId) return;
@@ -148,11 +160,13 @@ export default function EvaluationPage() {
                   <p className="text-sm text-slate-600">{currentAudio.description}</p>
                 )}
               </div>
-              <AudioPlayer
-                src={currentAudio.fileUrl}
+              <MediaPlayer
+                src={getMediaUrl(currentAudio.fileUrl)}
                 title=""
                 onPlayComplete={() => setHasPlayed(true)}
                 compact={false}
+                mediaType={getMediaType(currentAudio.fileUrl)}
+                showVideo={true}
               />
               {!hasPlayed && (
                 <p className="text-sm text-amber-600 mt-4 text-center">

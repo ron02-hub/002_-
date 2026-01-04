@@ -1,6 +1,6 @@
 'use client';
 
-import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { useMediaPlayer } from '@/hooks/useMediaPlayer';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Play, Pause, Volume2, Loader2 } from 'lucide-react';
@@ -30,8 +30,9 @@ export function AudioPlayerCompact({
     play,
     pause,
     setVolume,
-  } = useAudioPlayer(src, {
+  } = useMediaPlayer(src, {
     onEnd: onPlayComplete,
+    mediaType: 'auto',
   });
 
   const formatTime = (seconds: number): string => {
