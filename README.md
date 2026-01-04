@@ -81,12 +81,12 @@ AIが動的に質問を生成し、対話形式で深掘り
 
 ## 🚀 開発ロードマップ
 
-| フェーズ | 期間 | 内容 |
-|----------|------|------|
-| Phase 1 | Week 1-2 | 基盤構築（Next.js, DB, 音声再生） |
-| Phase 2 | Week 3-5 | コア機能（評価UI, インタビューUI） |
-| Phase 3 | Week 6-7 | 分析機能（NLP, 可視化） |
-| Phase 4 | Week 8 | 最適化・テスト |
+| フェーズ | 期間 | 内容 | ステータス |
+|----------|------|------|-----------|
+| Phase 1 | Week 1-2 | 基盤構築（Next.js, DB, 音声再生） | ✅ 完了 |
+| Phase 2 | Week 3-5 | コア機能（評価UI, インタビューUI） | ✅ 完了 |
+| Phase 3 | Week 6-7 | 分析機能（NLP, 可視化） | ✅ 完了 |
+| Phase 4 | Week 8 | 最適化・テスト | ✅ 完了 |
 
 ## 📝 仕様書
 
@@ -96,32 +96,123 @@ AIが動的に質問を生成し、対話形式で深掘り
 - [設計書](./specs/design.md)
 - [アーキテクチャ設計書](./specs/architecture.md)
 - [タスク一覧](./specs/tasks.md)
+- [改善計画](./specs/improvements.md)
+- [テスト結果](./specs/test-results.md)
 
 ## 🔧 開発環境セットアップ
 
+### 前提条件
+- Node.js 18以上
+- npm または yarn
+- PostgreSQL（Supabase推奨）
+
+### セットアップ手順
+
 ```bash
-# 依存関係インストール
+# 1. リポジトリをクローン（または既存ディレクトリに移動）
+cd 002_アンケート
+
+# 2. 依存関係のインストール
+cd src
 npm install
 
-# 環境変数設定
+# 3. 環境変数設定
 cp .env.example .env.local
-# .env.local を編集
+# .env.local を編集してデータベース接続情報を設定
 
-# データベースマイグレーション
-npx prisma migrate dev
+# 4. Prismaクライアント生成
+npm run db:generate
 
-# 開発サーバー起動
+# 5. データベースマイグレーション
+npm run db:migrate
+
+# 6. シードデータ投入
+npm run db:seed
+
+# 7. 開発サーバー起動
 npm run dev
+```
+
+アプリケーションは [http://localhost:3000](http://localhost:3000) で起動します。
+
+### Python分析環境のセットアップ（オプション）
+
+```bash
+cd src/analysis
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
 ## 📈 成功指標
 
-| 指標 | 目標値 |
-|------|--------|
-| アンケート完了率 | 80%以上 |
-| 平均回答時間 | 40〜50分 |
-| 自由記述平均文字数 | 100文字以上/質問 |
-| コンストラクト抽出数 | 5個以上/回答者 |
+| 指標 | 目標値 | 測定方法 |
+|------|--------|----------|
+| アンケート完了率 | 80%以上 | 完了数 / 開始数 |
+| 平均回答時間 | 40〜50分 | 回答時間の平均 |
+| 自由記述平均文字数 | 100文字以上/質問 | 文字数の平均 |
+| コンストラクト抽出数 | 5個以上/回答者 | トライアド比較結果 |
+
+## ✅ 実装完了機能
+
+### Phase 1: 基盤構築 ✅
+- Next.js 14プロジェクト（TypeScript, App Router）
+- Prisma + PostgreSQL（Supabase）
+- Zustand状態管理
+- Howler.js音声再生
+- 基本レイアウト・進捗バー
+
+### Phase 2: コア機能 ✅
+- ランディングページ
+- 同意・属性入力フォーム
+- SD法評価画面（8軸）
+- 購買意欲評価
+- トライアド比較（評価グリッド法）
+- ラダリング機能
+- デプスインタビュー型UI（チャット形式）
+
+### Phase 3: 分析機能 ✅
+- 価値ツリー可視化（D3.js）
+- SD法レーダーチャート
+- 購買意欲分布ヒストグラム
+- クロス集計テーブル
+- 因子分析
+- NLP分析（MeCab/BERT対応）
+- 管理者ダッシュボード
+
+### Phase 4: 最適化・テスト ✅
+- エラーハンドリング（ErrorBoundary）
+- 中断・再開機能
+- パフォーマンス最適化
+- Jestテスト環境
+- ユニットテスト実装
+
+## 🧪 テスト
+
+```bash
+# ユニットテスト実行
+npm test
+
+# テストカバレッジ
+npm run test:coverage
+
+# ウォッチモード
+npm run test:watch
+```
+
+## 📊 主要画面
+
+- `/` - ランディングページ
+- `/survey/consent` - 同意画面
+- `/survey/demographics` - 属性入力
+- `/survey/audio-check` - 音声チェック
+- `/survey/evaluation` - 音声評価（SD法）
+- `/survey/triad` - トライアド比較
+- `/survey/laddering` - ラダリング
+- `/survey/interview` - デプスインタビュー
+- `/survey/complete` - 完了画面
+- `/survey/resume` - 中断したアンケート再開
+- `/admin/dashboard` - 管理者ダッシュボード
 
 ## 📄 ライセンス
 
@@ -132,4 +223,5 @@ Private - All rights reserved
 | 日付 | バージョン | 更新内容 |
 |------|-----------|----------|
 | 2026-01-01 | 0.1.0 | 仕様書作成、プロジェクト初期化 |
+| 2026-01-01 | 1.0.0 | Phase 1-4完了、全機能実装完了 |
 
