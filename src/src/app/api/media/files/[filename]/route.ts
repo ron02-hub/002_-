@@ -4,6 +4,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 
 const MOVIE_DIRECTORY = '/Users/ry/Documents/06_Cursor/999_data/Movie';
+const AUDIO_TEST_DIRECTORY = '/Users/ry/Documents/06_Cursor/999_data/Sound_data/999_AudioTest';
 
 export async function GET(
   request: Request,
@@ -12,10 +13,20 @@ export async function GET(
   try {
     const { filename } = await params;
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = join(MOVIE_DIRECTORY, decodedFilename);
+    
+    // URLからディレクトリタイプを判定（クエリパラメータで指定可能）
+    const url = new URL(request.url);
+    const directoryType = url.searchParams.get('type') || 'movie';
+    
+    // ディレクトリを選択
+    const baseDirectory = directoryType === 'audio-test' 
+      ? AUDIO_TEST_DIRECTORY 
+      : MOVIE_DIRECTORY;
+    
+    const filePath = join(baseDirectory, decodedFilename);
 
     // セキュリティチェック: ディレクトリトラバーサル対策
-    if (!filePath.startsWith(MOVIE_DIRECTORY)) {
+    if (!filePath.startsWith(baseDirectory)) {
       return NextResponse.json(
         { error: 'Invalid file path' },
         { status: 400 }
@@ -39,6 +50,12 @@ export async function GET(
       ? 'video/mp4' 
       : ext === 'webm'
       ? 'video/webm'
+      : ext === 'mp3'
+      ? 'audio/mpeg'
+      : ext === 'wav'
+      ? 'audio/wav'
+      : ext === 'ogg'
+      ? 'audio/ogg'
       : 'application/octet-stream';
 
     // ファイルを返す
