@@ -37,8 +37,8 @@ export default function AudioCheckPage() {
     }
   };
 
-  // テスト用の音声URL
-  const testAudioUrl = '/audio/samples/sample-a.mp3';
+  // テスト用の動画URL（最初の動画ファイルを使用）
+  const testMediaUrl = '/api/media/files/01_NBox_走行音なし.mp4';
 
   return (
     <SurveyLayout
@@ -141,7 +141,7 @@ export default function AudioCheckPage() {
                   <div className="text-center">
                     <CheckCircle2 className={`w-8 h-8 mx-auto mb-2 ${canHear === true ? 'text-white' : 'text-emerald-500'}`} />
                     <span className="block font-medium">
-                      はい、聞こえました
+                      はい、正常に再生されました
                     </span>
                   </div>
                 </Button>
@@ -160,7 +160,7 @@ export default function AudioCheckPage() {
                   <div className="text-center">
                     <AlertCircle className={`w-8 h-8 mx-auto mb-2 ${canHear === false ? 'text-white' : 'text-amber-500'}`} />
                     <span className="block font-medium">
-                      いいえ、聞こえません
+                      いいえ、再生されませんでした
                     </span>
                   </div>
                 </Button>
