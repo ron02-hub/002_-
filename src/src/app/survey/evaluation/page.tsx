@@ -69,6 +69,25 @@ export default function EvaluationPage() {
   const currentAudio = audioSamples.find((s) => s.id === currentAudioId);
   const isLastAudio = currentAudioIndex >= audioOrder.length - 1;
 
+  // 音声サンプルが読み込まれていない場合はローディング表示
+  if (audioSamples.length === 0 || !currentAudio) {
+    return (
+      <SurveyLayout
+        progress={getProgress()}
+        showBack
+        title="音声評価"
+        subtitle="音声サンプルを読み込んでいます..."
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-muted-foreground">読み込み中...</p>
+          </div>
+        </div>
+      </SurveyLayout>
+    );
+  }
+
   const { control, handleSubmit, watch, setValue, formState: { isValid } } = useForm<EvaluationFormData>({
     resolver: zodResolver(evaluationSchema),
     defaultValues: {
@@ -83,19 +102,26 @@ export default function EvaluationPage() {
   const purchaseIntent = watch('purchaseIntent');
   const freeText = watch('freeText');
 
-  const { setAudioSamples, setAudioOrder } = useSurveyStore();
-
   useEffect(() => {
     // 音声サンプルが設定されていない場合は取得
     if (audioSamples.length === 0) {
       fetch('/api/audio/samples')
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
         .then((data) => {
-          // ストアに設定
-          setAudioSamples(data);
-          // ランダム順序を設定
-          const order = data.map((s: { id: string }) => s.id).sort(() => Math.random() - 0.5);
-          setAudioOrder(order);
+          if (Array.isArray(data) && data.length > 0) {
+            // ストアに設定
+            setAudioSamples(data);
+            // ランダム順序を設定
+            const order = data.map((s: { id: string }) => s.id).sort(() => Math.random() - 0.5);
+            setAudioOrder(order);
+          } else {
+            console.error('No audio samples received');
+          }
         })
         .catch((error) => {
           console.error('Failed to load audio samples:', error);
@@ -127,11 +153,20 @@ export default function EvaluationPage() {
     }
   };
 
-  if (!currentAudio) {
+  // 音声サンプルが読み込まれていない、または現在の音声が存在しない場合はローディング表示
+  if (audioSamples.length === 0 || !currentAudio || !currentAudioId) {
     return (
-      <SurveyLayout progress={getProgress()} showBack>
-        <div className="text-center py-12">
-          <p className="text-slate-600">音声サンプルを読み込んでいます...</p>
+      <SurveyLayout 
+        progress={getProgress()} 
+        showBack
+        title="音声評価"
+        subtitle="音声サンプルを読み込んでいます..."
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-muted-foreground">読み込み中...</p>
+          </div>
         </div>
       </SurveyLayout>
     );
