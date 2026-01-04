@@ -147,7 +147,7 @@ export const useSurveyStore = create<SurveyState>()(
       setHeadphoneChecked: (checked) => {
         set({ headphoneChecked: checked });
         if (checked) {
-          set({ currentPhase: 'evaluation' });
+          set({ currentPhase: 'evaluation', currentAudioIndex: 0 });
         }
       },
 

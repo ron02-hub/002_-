@@ -4,6 +4,7 @@ import { useMediaPlayer } from '@/hooks/useMediaPlayer';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { AudioWaveform } from '../audio/AudioWaveform';
+import { useMemo } from 'react';
 import { 
   Play, 
   Pause, 
@@ -37,6 +38,12 @@ export function MediaPlayer({
   mediaType = 'auto',
   showVideo = true,
 }: MediaPlayerProps) {
+  // オプションをメモ化して再レンダリング時の不要なリロードを防止
+  const options = useMemo(() => ({
+    onEnd: onPlayComplete,
+    mediaType,
+  }), [onPlayComplete, mediaType]);
+
   const {
     isPlaying,
     isLoading,
@@ -53,10 +60,7 @@ export function MediaPlayer({
     setVolume,
     mediaType: detectedType,
     videoRef,
-  } = useMediaPlayer(src, {
-    onEnd: onPlayComplete,
-    mediaType,
-  });
+  } = useMediaPlayer(src, options);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -65,9 +69,18 @@ export function MediaPlayer({
   };
 
   const handlePlayPause = () => {
+    console.log('再生/一時停止ボタンがクリックされました', {
+      isPlaying,
+      isLoaded,
+      isLoading,
+      error,
+      mediaType: detectedType,
+    });
+    
     if (isPlaying) {
       pause();
     } else {
+      console.log('play()関数を呼び出します');
       play();
     }
   };
@@ -105,6 +118,7 @@ export function MediaPlayer({
           className
         )}>
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             onClick={handlePlayPause}
@@ -152,7 +166,7 @@ export function MediaPlayer({
               ref={videoRef}
               className="w-full h-auto max-h-96"
               playsInline
-              muted={volume === 0}
+              preload="metadata"
             />
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
@@ -165,6 +179,7 @@ export function MediaPlayer({
         {/* 再生コントロール */}
         <div className="flex items-center justify-center gap-4">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             onClick={stop}
@@ -175,6 +190,7 @@ export function MediaPlayer({
           </Button>
 
           <Button
+            type="button"
             variant="default"
             size="icon"
             onClick={handlePlayPause}
@@ -213,6 +229,7 @@ export function MediaPlayer({
         {showVolumeControl && (
           <div className="flex items-center gap-3">
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={toggleMute}
@@ -245,6 +262,7 @@ export function MediaPlayer({
         className
       )}>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={handlePlayPause}
@@ -288,6 +306,7 @@ export function MediaPlayer({
       {/* 再生コントロール */}
       <div className="flex items-center justify-center gap-4">
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={stop}
@@ -298,6 +317,7 @@ export function MediaPlayer({
         </Button>
 
         <Button
+          type="button"
           variant="default"
           size="icon"
           onClick={handlePlayPause}
@@ -342,6 +362,7 @@ export function MediaPlayer({
       {showVolumeControl && (
         <div className="flex items-center gap-3">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             onClick={toggleMute}

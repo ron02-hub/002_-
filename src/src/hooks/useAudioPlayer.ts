@@ -117,8 +117,16 @@ export function useAudioPlayer(
         cancelAnimationFrame(rafRef.current);
       }
       howl.unload();
+      howlRef.current = null;
     };
-  }, [src, onLoad, onEnd, onError]);
+  }, [src, onLoad, onEnd, onError]); // volumeを削除
+
+  // 音量が変更されたときにHowlインスタンスに反映
+  useEffect(() => {
+    if (howlRef.current) {
+      howlRef.current.volume(volume);
+    }
+  }, [volume]);
 
   // 再生状態が変わったら進捗更新を開始/停止
   useEffect(() => {

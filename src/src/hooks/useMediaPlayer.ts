@@ -27,7 +27,7 @@ interface UseMediaPlayerReturn {
   seek: (time: number) => void;
   setVolume: (volume: number) => void;
   mediaType: 'audio' | 'video';
-  videoRef?: React.RefObject<HTMLVideoElement>;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
 }
 
 /**

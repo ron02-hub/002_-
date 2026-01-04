@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { SurveyLayout } from '@/components/layout/SurveyLayout';
 import { MediaPlayer } from '@/components/media/MediaPlayer';
 import { getMediaUrl, getMediaType } from '@/lib/mediaFiles';
@@ -50,6 +50,7 @@ const defaultSDScores: SDScores = {
 
 export default function EvaluationPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     audioSamples,
     audioOrder,
@@ -60,33 +61,30 @@ export default function EvaluationPage() {
     getProgress,
     setAudioSamples,
     setAudioOrder,
+    initSession,
+    setConsent,
+    setDemographics,
+    setHeadphoneChecked,
   } = useSurveyStore();
+
+  // 音声評価ページに入ったときに、currentAudioIndexを0にリセット
+  useEffect(() => {
+    if (audioOrder.length > 0) {
+      // currentAudioIndexが範囲外の場合は0にリセット
+      if (currentAudioIndex >= audioOrder.length) {
+        useSurveyStore.setState({ currentAudioIndex: 0 });
+      }
+    }
+  }, [audioOrder.length, currentAudioIndex]);
 
   const [hasPlayed, setHasPlayed] = useState(false);
   const [startTime] = useState(Date.now());
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const currentAudioId = audioOrder[currentAudioIndex];
   const currentAudio = audioSamples.find((s) => s.id === currentAudioId);
   const isLastAudio = currentAudioIndex >= audioOrder.length - 1;
-
-  // 音声サンプルが読み込まれていない場合はローディング表示
-  if (audioSamples.length === 0 || !currentAudio) {
-    return (
-      <SurveyLayout
-        progress={getProgress()}
-        showBack
-        title="音声評価"
-        subtitle="音声サンプルを読み込んでいます..."
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">読み込み中...</p>
-          </div>
-        </div>
-      </SurveyLayout>
-    );
-  }
 
   const { control, handleSubmit, watch, setValue, formState: { isValid } } = useForm<EvaluationFormData>({
     resolver: zodResolver(evaluationSchema),
@@ -102,9 +100,38 @@ export default function EvaluationPage() {
   const purchaseIntent = watch('purchaseIntent');
   const freeText = watch('freeText');
 
+  // テストモード: クエリパラメータからテストデータを読み込む
+  useEffect(() => {
+    const isTestMode = searchParams.get('test') === 'true';
+    if (isTestMode) {
+      try {
+        const consentParam = searchParams.get('consent');
+        const demographicsParam = searchParams.get('demographics');
+        
+        if (consentParam && demographicsParam) {
+          const consent = JSON.parse(consentParam);
+          const demographics = JSON.parse(demographicsParam);
+          
+          // セッションを初期化
+          initSession();
+          // 同意と属性入力を設定
+          setConsent(consent);
+          setDemographics(demographics);
+          // ヘッドホンチェックをスキップ
+          setHeadphoneChecked(true);
+        }
+      } catch (error) {
+        console.error('Failed to parse test data:', error);
+      }
+    }
+  }, [searchParams, initSession, setConsent, setDemographics, setHeadphoneChecked]);
+
   useEffect(() => {
     // 音声サンプルが設定されていない場合は取得
-    if (audioSamples.length === 0) {
+    if (audioSamples.length === 0 && !isLoading && !loadError) {
+      setIsLoading(true);
+      setLoadError(null);
+      
       fetch('/api/audio/samples')
         .then((res) => {
           if (!res.ok) {
@@ -119,15 +146,20 @@ export default function EvaluationPage() {
             // ランダム順序を設定
             const order = data.map((s: { id: string }) => s.id).sort(() => Math.random() - 0.5);
             setAudioOrder(order);
+            // 音声サンプルが読み込まれたら、currentAudioIndexを0にリセット
+            useSurveyStore.setState({ currentAudioIndex: 0 });
+            setIsLoading(false);
           } else {
-            console.error('No audio samples received');
+            throw new Error('音声サンプルが取得できませんでした。データが空です。');
           }
         })
         .catch((error) => {
           console.error('Failed to load audio samples:', error);
+          setLoadError(error instanceof Error ? error.message : '音声サンプルの読み込みに失敗しました');
+          setIsLoading(false);
         });
     }
-  }, [audioSamples.length, setAudioSamples, setAudioOrder]);
+  }, [audioSamples.length, isLoading, loadError, setAudioSamples, setAudioOrder]);
 
   const onSubmit = (data: EvaluationFormData) => {
     if (!currentAudioId) return;
@@ -135,7 +167,6 @@ export default function EvaluationPage() {
     const responseTime = Date.now() - startTime;
 
     addEvaluation(currentAudioId, {
-      audioSampleId: currentAudioId,
       presentationOrder: currentAudioIndex + 1,
       sdScores: data.sdScores,
       purchaseIntent: data.purchaseIntent,
@@ -148,8 +179,10 @@ export default function EvaluationPage() {
     } else {
       nextAudio();
       setHasPlayed(false);
-      // フォームをリセット
-      window.location.reload(); // 簡易的なリセット
+      // フォームをリセット (reloadの代わりに状態リセット)
+      setValue('sdScores', defaultSDScores);
+      setValue('purchaseIntent', 4);
+      setValue('freeText', '');
     }
   };
 
@@ -160,12 +193,42 @@ export default function EvaluationPage() {
         progress={getProgress()} 
         showBack
         title="音声評価"
-        subtitle="音声サンプルを読み込んでいます..."
+        subtitle={loadError ? "エラーが発生しました" : "音声サンプルを読み込んでいます..."}
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
+          <div className="text-center max-w-md">
+            {loadError ? (
+              <>
+                <div className="text-red-600 mb-4">
+                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-red-600 font-semibold mb-2">読み込みエラー</p>
+                <p className="text-muted-foreground mb-4">{loadError}</p>
+                <Button
+                  onClick={() => {
+                    setLoadError(null);
+                    setIsLoading(false);
+                    // 再試行
+                    if (audioSamples.length === 0) {
+                      setAudioSamples([]);
+                    }
+                  }}
+                  variant="outline"
+                >
+                  再試行
+                </Button>
+              </>
+            ) : (
+              <>
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
             <p className="text-muted-foreground">読み込み中...</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  サーバーから音声サンプルを取得しています
+                </p>
+              </>
+            )}
           </div>
         </div>
       </SurveyLayout>
