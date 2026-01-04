@@ -47,7 +47,8 @@
 - TypeScript
 - Tailwind CSS + shadcn/ui
 - Zustand (状態管理)
-- Howler.js (音声再生)
+- Howler.js (音声再生) + HTML5 Video (動画再生)
+- MediaPlayer (音声・動画統合プレーヤー)
 - D3.js + Recharts (可視化)
 
 ### バックエンド
@@ -90,8 +91,15 @@ AIが動的に質問を生成し、対話形式で深掘り
 
 ## 📝 仕様書
 
-詳細な仕様は `specs/` ディレクトリを参照してください：
+詳細な仕様は以下のドキュメントを参照してください：
 
+### Kiro形式ドキュメント
+- [要件定義書](./要件定義書.md)
+- [技術設計書](./技術設計書.md)
+- [実装計画書](./実装計画書.md)
+- [アンケート設計書](./アンケート設計.md)
+
+### 詳細仕様書（specs/）
 - [要件定義書](./specs/requirements.md)
 - [設計書](./specs/design.md)
 - [アーキテクチャ設計書](./specs/architecture.md)
@@ -159,8 +167,9 @@ pip install -r requirements.txt
 - Next.js 14プロジェクト（TypeScript, App Router）
 - Prisma + PostgreSQL（Supabase）
 - Zustand状態管理
-- Howler.js音声再生
+- MediaPlayer（音声・動画統合再生）
 - 基本レイアウト・進捗バー
+- メディアファイル管理（動画・音声テスト対応）
 
 ### Phase 2: コア機能 ✅
 - ランディングページ
@@ -182,10 +191,12 @@ pip install -r requirements.txt
 
 ### Phase 4: 最適化・テスト ✅
 - エラーハンドリング（ErrorBoundary）
+- ローディング状態管理とエラー表示
 - 中断・再開機能
-- パフォーマンス最適化
+- パフォーマンス最適化（ストリーミング対応）
 - Jestテスト環境
 - ユニットテスト実装
+- テストモード機能（クエリパラメータ対応）
 
 ## 🧪 テスト
 
@@ -224,4 +235,5 @@ Private - All rights reserved
 |------|-----------|----------|
 | 2026-01-01 | 0.1.0 | 仕様書作成、プロジェクト初期化 |
 | 2026-01-01 | 1.0.0 | Phase 1-4完了、全機能実装完了 |
+| 2026-01-01 | 1.1.0 | 音声・動画統合再生対応、エラーハンドリング改善 |
 
