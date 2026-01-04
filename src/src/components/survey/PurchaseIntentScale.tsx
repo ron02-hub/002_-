@@ -34,8 +34,34 @@ export function PurchaseIntentScale({
           <ShoppingCart className="w-5 h-5 text-emerald-600" />
           購買意欲
         </CardTitle>
-        <p className="text-sm text-slate-600 mt-2">
-          この走行音の車を購入したいと思いますか？
+        <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-cyan-50 border border-emerald-200 rounded-lg">
+          <h4 className="font-semibold text-slate-800 mb-3">評価の前提条件</h4>
+          <div className="space-y-2 text-sm text-slate-700">
+            <div className="flex items-start gap-2">
+              <span className="font-medium min-w-[80px]">外観:</span>
+              <span>Honda N-Box（軽自動車トップシェアの親しみやすいデザイン）</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="font-medium min-w-[80px]">価格:</span>
+              <span>200万円（標準的なグレード構成）</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="font-medium min-w-[80px]">燃費:</span>
+              <span>20.0km/L（WLTCモード）</span>
+            </div>
+            <div className="flex items-start gap-2 mt-3 pt-3 border-t border-emerald-200">
+              <span className="font-medium min-w-[80px]">その他:</span>
+              <ul className="list-disc list-inside space-y-1 text-slate-600">
+                <li>維持費（税金・保険料）の安さ</li>
+                <li>先進安全装備（Honda SENSING）の充実</li>
+                <li>室内空間の広さと使い勝手</li>
+                <li>リセールバリュー（下取り価格）の高さ</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-slate-600 mt-4">
+          上記の条件を前提として、この走行音の車を購入したいと思いますか？
         </p>
       </CardHeader>
       <CardContent>

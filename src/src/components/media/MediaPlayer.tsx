@@ -117,6 +117,13 @@ export function MediaPlayer({
           'flex items-center gap-3 p-3 bg-muted rounded-lg',
           className
         )}>
+          {/* 隠しビデオ要素（コンパクトモードでも再生を可能にするため） */}
+          <video
+            ref={videoRef}
+            className="hidden"
+            playsInline
+            preload="metadata"
+          />
           <Button
             type="button"
             variant="ghost"

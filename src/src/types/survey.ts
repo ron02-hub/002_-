@@ -6,7 +6,8 @@ export type Phase =
   | 'demographics'
   | 'audio-check'
   | 'evaluation'
-  | 'triad'
+  | 'best-worst'
+  | 'triad' // 後方互換性のため保持
   | 'laddering'
   | 'interview'
   | 'complete';
@@ -56,11 +57,29 @@ export interface Evaluation {
   presentationOrder: number;
   sdScores: SDScores;
   purchaseIntent: number; // 1-7
+  purchaseIntentConditions?: {
+    vehicleModel: string; // "Honda N-Box"
+    price: string; // "200万円"
+    fuelEconomy: string; // "20.0km/L"
+    otherFactors?: string[]; // その他の考慮事項
+  };
   freeText?: string;
   responseTimeMs?: number;
   createdAt: Date;
 }
 
+// 最良・最悪音比較（評価グリッド法の新手法）
+export interface BestWorstComparison {
+  id: string;
+  respondentId: string;
+  bestAudioId: string; // 最も印象が良かった音
+  worstAudioId: string; // 最も印象が悪かった音
+  bestReason: string; // 良かった理由
+  worstReason: string; // 悪かった理由
+  createdAt: Date;
+}
+
+// 後方互換性のためTriad型も保持（段階的移行用）
 export interface Triad {
   id: string;
   respondentId: string;
@@ -77,7 +96,8 @@ export interface Triad {
 
 export interface Construct {
   id: string;
-  triadId: string;
+  bestWorstComparisonId?: string; // 最良・最悪比較ID（新方式）
+  triadId?: string; // トライアドID（後方互換性のため保持）
   respondentId: string;
   constructText: string;
   poleLeft?: string;
@@ -139,6 +159,13 @@ export interface TriadFormData {
   differentOne: string;
   similarityReason: string;
   differenceReason: string;
+}
+
+export interface BestWorstFormData {
+  bestAudioId: string;
+  worstAudioId: string;
+  bestReason: string;
+  worstReason: string;
 }
 
 // SD法の評価軸定義

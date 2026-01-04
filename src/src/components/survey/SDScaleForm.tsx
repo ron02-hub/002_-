@@ -27,7 +27,7 @@ export function SDScaleForm({ scores, onChange, disabled = false }: SDScaleFormP
           印象評価
         </CardTitle>
         <p className="text-sm text-slate-600 mt-2">
-          この走行音を聞いて、以下の8つの項目について評価してください。
+          この走行音を聞いて、以下の9つの項目について評価してください。
           スライダーを動かして、あなたの印象に最も近い位置を選択してください。
         </p>
       </CardHeader>

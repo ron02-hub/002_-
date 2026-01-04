@@ -5,6 +5,7 @@ import type {
   AudioSample,
   Evaluation,
   Triad,
+  BestWorstComparison,
   Construct,
   InterviewMessage,
   SDScores,
@@ -36,7 +37,10 @@ interface SurveyState {
   // 評価データ
   evaluations: Map<string, Evaluation>;
 
-  // トライアド・コンストラクト
+  // 評価グリッド法（最良・最悪比較）
+  bestWorstComparison: BestWorstComparison | null;
+  
+  // トライアド・コンストラクト（後方互換性のため保持）
   triads: Triad[];
   currentTriadIndex: number;
   constructs: Construct[];
@@ -61,6 +65,8 @@ interface SurveyState {
   
   addEvaluation: (audioId: string, data: Omit<Evaluation, 'id' | 'respondentId' | 'audioSampleId' | 'createdAt'>) => void;
   
+  addBestWorstComparison: (data: Omit<BestWorstComparison, 'id' | 'respondentId' | 'createdAt'>) => void;
+  
   addTriad: (data: Omit<Triad, 'id' | 'respondentId' | 'createdAt'>) => void;
   addConstruct: (data: Omit<Construct, 'id' | 'respondentId' | 'createdAt'>) => void;
   nextTriad: () => void;
@@ -79,7 +85,8 @@ const PHASE_WEIGHTS: Record<Phase, number> = {
   demographics: 10,
   'audio-check': 12,
   evaluation: 45,
-  triad: 65,
+  'best-worst': 65,
+  triad: 65, // 後方互換性のため保持
   laddering: 80,
   interview: 95,
   complete: 100,
@@ -101,6 +108,7 @@ const initialState = {
   audioOrder: [],
   currentAudioIndex: 0,
   evaluations: new Map<string, Evaluation>(),
+  bestWorstComparison: null,
   triads: [],
   currentTriadIndex: 0,
   constructs: [],
@@ -156,12 +164,12 @@ export const useSurveyStore = create<SurveyState>()(
       setAudioOrder: (order) => set({ audioOrder: order }),
 
       nextAudio: () => {
-        const { currentAudioIndex, audioOrder, triads } = get();
+        const { currentAudioIndex, audioOrder } = get();
         if (currentAudioIndex < audioOrder.length - 1) {
           set({ currentAudioIndex: currentAudioIndex + 1 });
         } else {
-          // すべての音声評価が完了 → トライアドフェーズへ
-          set({ currentPhase: 'triad', currentAudioIndex: 0 });
+          // すべての音声評価が完了 → 最良・最悪比較フェーズへ
+          set({ currentPhase: 'best-worst', currentAudioIndex: 0 });
         }
       },
 
@@ -180,6 +188,20 @@ export const useSurveyStore = create<SurveyState>()(
         const newEvaluations = new Map(evaluations);
         newEvaluations.set(audioId, evaluation);
         set({ evaluations: newEvaluations });
+      },
+
+      addBestWorstComparison: (data) => {
+        const { respondentId } = get();
+        if (!respondentId) return;
+
+        const comparison: BestWorstComparison = {
+          id: generateId(),
+          respondentId,
+          ...data,
+          createdAt: new Date(),
+        };
+
+        set({ bestWorstComparison: comparison, currentPhase: 'laddering' });
       },
 
       addTriad: (data) => {

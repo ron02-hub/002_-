@@ -70,8 +70,8 @@ export default function InterviewPage() {
         depthLevel: depthLevel + 1,
       });
 
-      // 深度レベルを更新
-      if (depthLevel >= 2) {
+      // 深度レベルを更新（短縮版：最大2問まで）
+      if (depthLevel >= 1) {
         // このトピックが完了
         if (isLastTopic) {
           // すべてのトピックが完了

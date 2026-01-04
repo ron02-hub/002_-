@@ -14,13 +14,21 @@ import { ArrowUp, ArrowDown, HelpCircle } from 'lucide-react';
 
 export default function LadderingPage() {
   const router = useRouter();
-  const { constructs, triads, addConstruct, getProgress } = useSurveyStore();
+  const { constructs, bestWorstComparison, triads, addConstruct, getProgress } = useSurveyStore();
 
-  // トライアドから抽出されたコンストラクトを取得
-  const extractedConstructs = triads.map((triad) => ({
-    similarity: triad.similarityReason,
-    difference: triad.differenceReason,
-  }));
+  // 最良・最悪比較から抽出されたコンストラクトを取得（新方式）
+  // 後方互換性のため、トライアドからの抽出も保持
+  const extractedConstructs = bestWorstComparison
+    ? [
+        {
+          similarity: bestWorstComparison.bestReason,
+          difference: bestWorstComparison.worstReason,
+        },
+      ]
+    : triads.map((triad) => ({
+        similarity: triad.similarityReason,
+        difference: triad.differenceReason,
+      }));
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [ladderUp, setLadderUp] = useState<string[]>([]);
@@ -48,15 +56,27 @@ export default function LadderingPage() {
   const handleNext = () => {
     if (currentConstruct) {
       // コンストラクトを保存
-      const triad = triads[currentIndex];
-      if (triad) {
+      if (bestWorstComparison) {
+        // 新方式：最良・最悪比較から
         addConstruct({
-          triadId: '', // TODO: 実際のtriad IDを設定
+          bestWorstComparisonId: bestWorstComparison.id,
           constructText: `${currentConstruct.similarity} / ${currentConstruct.difference}`,
           ladderUp: ladderUp.length > 0 ? ladderUp : undefined,
           ladderDown: ladderDown.length > 0 ? ladderDown : undefined,
           level: 'functional',
         });
+      } else {
+        // 後方互換性：トライアドから
+        const triad = triads[currentIndex];
+        if (triad) {
+          addConstruct({
+            triadId: triad.id,
+            constructText: `${currentConstruct.similarity} / ${currentConstruct.difference}`,
+            ladderUp: ladderUp.length > 0 ? ladderUp : undefined,
+            ladderDown: ladderDown.length > 0 ? ladderDown : undefined,
+            level: 'functional',
+          });
+        }
       }
     }
 

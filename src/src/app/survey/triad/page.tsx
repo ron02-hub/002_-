@@ -147,16 +147,16 @@ export default function TriadPage() {
           transition={{ delay: 0.1 }}
           className="space-y-4"
         >
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <MediaPlayer
               src={getMediaUrl(audio1.fileUrl)}
               title={audio1.name}
               onPlayComplete={() => {
                 setHasPlayedAll(true);
               }}
-              compact={true}
+              compact={false}
               mediaType={getMediaType(audio1.fileUrl)}
-              showVideo={false}
+              showVideo={true}
             />
             <MediaPlayer
               src={getMediaUrl(audio2.fileUrl)}
@@ -164,9 +164,9 @@ export default function TriadPage() {
               onPlayComplete={() => {
                 setHasPlayedAll(true);
               }}
-              compact={true}
+              compact={false}
               mediaType={getMediaType(audio2.fileUrl)}
-              showVideo={false}
+              showVideo={true}
             />
             <MediaPlayer
               src={getMediaUrl(audio3.fileUrl)}
@@ -174,9 +174,9 @@ export default function TriadPage() {
               onPlayComplete={() => {
                 setHasPlayedAll(true);
               }}
-              compact={true}
+              compact={false}
               mediaType={getMediaType(audio3.fileUrl)}
-              showVideo={false}
+              showVideo={true}
             />
           </div>
         </motion.div>

@@ -25,10 +25,11 @@ model Respondent {
   createdAt         DateTime  @default(now())
   completedAt       DateTime?
 
-  evaluations   Evaluation[]
-  triads        Triad[]
-  constructs    Construct[]
-  interviewLogs InterviewLog[]
+  evaluations          Evaluation[]
+  bestWorstComparisons BestWorstComparison[]
+  triads               Triad[]
+  constructs           Construct[]
+  interviewLogs        InterviewLog[]
 }
 
 // 音声サンプル
@@ -43,23 +44,26 @@ model AudioSample {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  evaluations Evaluation[]
-  triadsAs1   Triad[]      @relation("Audio1")
-  triadsAs2   Triad[]      @relation("Audio2")
-  triadsAs3   Triad[]      @relation("Audio3")
+  evaluations          Evaluation[]
+  bestWorstAsBest      BestWorstComparison[] @relation("BestAudio")
+  bestWorstAsWorst     BestWorstComparison[] @relation("WorstAudio")
+  triadsAs1            Triad[]              @relation("Audio1")
+  triadsAs2            Triad[]              @relation("Audio2")
+  triadsAs3            Triad[]              @relation("Audio3")
 }
 
 // SD法評価
 model Evaluation {
-  id                String   @id @default(cuid())
-  respondentId      String
-  audioSampleId     String
-  presentationOrder Int      // 提示順序
-  sdScores          Json     // { quiet: 2, pleasant: 1, ... }
-  purchaseIntent    Int      // 購買意欲 (1-7)
-  freeText          String?  // 自由記述
-  responseTimeMs    Int?     // 回答時間
-  createdAt         DateTime @default(now())
+  id                        String   @id @default(cuid())
+  respondentId              String
+  audioSampleId             String
+  presentationOrder         Int      // 提示順序
+  sdScores                  Json     // { quiet: 2, pleasant: 1, natural: 1, ... }
+  purchaseIntent            Int      // 購買意欲 (1-7)
+  purchaseIntentConditions  Json?    // 前提条件 { vehicleModel, price, fuelEconomy, otherFactors }
+  freeText                  String?  // 自由記述
+  responseTimeMs            Int?     // 回答時間
+  createdAt                 DateTime @default(now())
 
   respondent  Respondent  @relation(fields: [respondentId], references: [id], onDelete: Cascade)
   audioSample AudioSample @relation(fields: [audioSampleId], references: [id])
@@ -67,7 +71,23 @@ model Evaluation {
   @@unique([respondentId, audioSampleId])
 }
 
-// トライアド比較
+// 最良・最悪音比較（評価グリッド法の新手法）
+model BestWorstComparison {
+  id            String   @id @default(cuid())
+  respondentId  String
+  bestAudioId   String   // 最も印象が良かった音
+  worstAudioId  String   // 最も印象が悪かった音
+  bestReason    String   // 良かった理由
+  worstReason   String   // 悪かった理由
+  createdAt     DateTime @default(now())
+
+  respondent Respondent  @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+  bestAudio  AudioSample @relation("BestAudio", fields: [bestAudioId], references: [id])
+  worstAudio AudioSample @relation("WorstAudio", fields: [worstAudioId], references: [id])
+  constructs Construct[]
+}
+
+// トライアド比較（後方互換性のため保持）
 model Triad {
   id               String   @id @default(cuid())
   respondentId     String
@@ -85,27 +105,29 @@ model Triad {
   audio1     AudioSample @relation("Audio1", fields: [audio1Id], references: [id])
   audio2     AudioSample @relation("Audio2", fields: [audio2Id], references: [id])
   audio3     AudioSample @relation("Audio3", fields: [audio3Id], references: [id])
-  constructs Construct[]
+  constructs Construct[] @relation("TriadConstructs")
 }
 
 // コンストラクト（評価グリッド法で抽出）
 model Construct {
-  id            String   @id @default(cuid())
-  triadId       String
-  respondentId  String
-  constructText String   // コンストラクト文
-  poleLeft      String?  // 左極
-  poleRight     String?  // 右極
-  ladderUp      Json?    // 上位概念リスト
-  ladderDown    Json?    // 下位概念リスト
-  level         String   // terminal, instrumental, functional, physical
-  parentId      String?  // 親コンストラクトID
-  createdAt     DateTime @default(now())
+  id                    String   @id @default(cuid())
+  bestWorstComparisonId String?  // 最良・最悪比較ID（新方式）
+  triadId               String?  // トライアドID（後方互換性のため保持）
+  respondentId          String
+  constructText         String   // コンストラクト文
+  poleLeft              String?  // 左極
+  poleRight              String?  // 右極
+  ladderUp              Json?    // 上位概念リスト
+  ladderDown            Json?    // 下位概念リスト
+  level                 String   // terminal, instrumental, functional, physical
+  parentId              String?  // 親コンストラクトID
+  createdAt             DateTime @default(now())
 
-  triad      Triad       @relation(fields: [triadId], references: [id], onDelete: Cascade)
-  respondent Respondent  @relation(fields: [respondentId], references: [id], onDelete: Cascade)
-  parent     Construct?  @relation("ConstructHierarchy", fields: [parentId], references: [id])
-  children   Construct[] @relation("ConstructHierarchy")
+  bestWorstComparison BestWorstComparison? @relation(fields: [bestWorstComparisonId], references: [id], onDelete: Cascade)
+  triad                Triad?               @relation("TriadConstructs", fields: [triadId], references: [id], onDelete: Cascade)
+  respondent           Respondent          @relation(fields: [respondentId], references: [id], onDelete: Cascade)
+  parent               Construct?          @relation("ConstructHierarchy", fields: [parentId], references: [id])
+  children             Construct[]          @relation("ConstructHierarchy")
 }
 
 // インタビューログ

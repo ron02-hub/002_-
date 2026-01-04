@@ -170,12 +170,23 @@ export default function EvaluationPage() {
       presentationOrder: currentAudioIndex + 1,
       sdScores: data.sdScores,
       purchaseIntent: data.purchaseIntent,
+      purchaseIntentConditions: {
+        vehicleModel: 'Honda N-Box',
+        price: '200万円',
+        fuelEconomy: '20.0km/L',
+        otherFactors: [
+          '維持費（税金・保険料）の安さ',
+          '先進安全装備（Honda SENSING）の充実',
+          '室内空間の広さと使い勝手',
+          'リセールバリュー（下取り価格）の高さ',
+        ],
+      },
       freeText: data.freeText,
       responseTimeMs: responseTime,
     });
 
     if (isLastAudio) {
-      router.push('/survey/triad');
+      router.push('/survey/best-worst');
     } else {
       nextAudio();
       setHasPlayed(false);
@@ -183,6 +194,9 @@ export default function EvaluationPage() {
       setValue('sdScores', defaultSDScores);
       setValue('purchaseIntent', 4);
       setValue('freeText', '');
+      
+      // ページのトップに戻る
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
