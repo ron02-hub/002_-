@@ -27,7 +27,7 @@
     "usability:generate": "tsx scripts/generate-usability-test-results.ts",
     "usability:export": "tsx scripts/export-usability-test-to-excel.ts",
     "usability:all": "npm run usability:generate && npm run usability:export",
-    "marketing:report": "tsx scripts/generate-marketing-report.ts"
+    "marketing:report": "tsx scripts/generate-marketing-report-v2.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

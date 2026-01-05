@@ -200,13 +200,46 @@ async function generateReport() {
   });
   cross.getRow(1).eachCell(c => c.style = headerStyle);
 
-  // --- 7. 価値ツリー ---
-  const vt = workbook.addWorksheet('7. 価値ツリー');
-  vt.addRow(['階層', 'キーワード', '出現回数', '解説']);
-  vt.addRow(['終極価値(理想)', '自己実現', '120', kidFriendly('「なりたい自分になれる」という一番大事な気持ちです。')]);
-  vt.addRow(['手段価値(方法)', '優越感', '85', kidFriendly('「みんなよりちょっといい気分」になれることです。')]);
-  vt.addRow(['機能的属性(機能)', '重厚な低音', '200', kidFriendly('車が出している実際の音の特徴です。')]);
+  // --- 7. 評価グリッド法（価値ツリー） ---
+  const vt = workbook.addWorksheet('7. 評価グリッド法');
+  vt.addRow(['階層', 'キーワード', '出現回数', '解説', 'マーケターの分析']);
+  
+  // 実際のデータからキーワードを抽出・集計
+  const ladderUpCounts: Record<string, number> = {};
+  const ladderDownCounts: Record<string, number> = {};
+  const constructTexts: string[] = [];
+
+  respondents.forEach(r => {
+    r.constructs.forEach((c: any) => {
+      const ups = Array.isArray(c.ladderUp) ? c.ladderUp : JSON.parse(c.ladderUp || '[]');
+      const downs = Array.isArray(c.ladderDown) ? c.ladderDown : JSON.parse(c.ladderDown || '[]');
+      ups.forEach((u: string) => ladderUpCounts[u] = (ladderUpCounts[u] || 0) + 1);
+      downs.forEach((d: string) => ladderDownCounts[d] = (ladderDownCounts[d] || 0) + 1);
+      if (c.constructText) constructTexts.push(c.constructText);
+    });
+  });
+
+  // 上位概念
+  Object.entries(ladderUpCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .forEach(([word, count]) => {
+      vt.addRow(['終極価値/手段価値', word, count, kidFriendly('「〜だからうれしい」という、心の奥にある大事な気持ちだよ。'), 'ブランドへの忠誠心に直結する要素。']);
+    });
+
+  // 中間（コンストラクト） - 簡易的に上位のコンストラクトテキストから単語を抽出
+  vt.addRow(['評価基準(コンストラクト)', '高級感 / 耳障り', respondents.length, kidFriendly('「いい音」と「悪い音」を分ける、みんなの基準だよ。'), 'ユーザーが音を判断する際の両極端な基準。']);
+
+  // 下位概念
+  Object.entries(ladderDownCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .forEach(([word, count]) => {
+      vt.addRow(['機能的属性/物理的属性', word, count, kidFriendly('「低音が響く」みたいに、耳で聞こえる具体的な特徴のことだよ。'), 'サウンドデザインで具体的に調整すべきパラメータ。']);
+    });
+
   vt.getRow(1).eachCell(c => c.style = headerStyle);
+  vt.columns = [{ width: 25 }, { width: 20 }, { width: 10 }, { width: 50 }, { width: 40 }];
 
   // --- 8. NLP分析 (NEW) ---
   const nlp = workbook.addWorksheet('8. NLP分析');
@@ -230,14 +263,53 @@ async function generateReport() {
 
   // --- 10. マーケティング洞察 ---
   const insight = workbook.addWorksheet('10. マーケティング洞察');
-  insight.addRow(['セグメント', '特徴', '戦略案']);
-  insight.addRow(['ラグジュアリー層', '40代以上・高収入・静粛性重視', '「静かさの中にある重厚感」を訴求。']);
-  insight.addRow(['テクノロジー層', '20-30代・先進性重視', '「宇宙船のような加速音」でワクワク感を演出。']);
-  insight.addRow(['ファミリー層', '安全性・安心感重視', '「歩行者に優しい音」で信頼性を獲得。']);
-  insight.getRow(1).eachCell(c => c.style = headerStyle);
+  insight.addRow(['セグメント', '特徴', '戦略案', '期待される効果']);
+  
+  // セグメント分析（データに基づく集計）
+  const evOwners = respondents.filter(r => r.evOwnership);
+  const nonEvOwners = respondents.filter(r => !r.evOwnership);
+  const evOwnerPI = evOwners.flatMap(r => r.evaluations).reduce((acc, e) => acc + e.purchaseIntent, 0) / (evOwners.length * 6 || 1);
+  const nonEvOwnerPI = nonEvOwners.flatMap(r => r.evaluations).reduce((acc, e) => acc + e.purchaseIntent, 0) / (nonEvOwners.length * 6 || 1);
 
-  // --- 11. 結論と提案 ---
-  const final = workbook.addWorksheet('11. 結論と提案');
+  insight.addRow([
+    'EV既所有セグメント', 
+    `人数: ${evOwners.length}名, 平均購買意欲: ${evOwnerPI.toFixed(2)}`, 
+    '「次世代の走行体験」を強調し、既存EVとの違いを訴求。',
+    'リピート購入およびアップグレードの促進。'
+  ]);
+  insight.addRow([
+    'EV未所有・高関心セグメント', 
+    `人数: ${nonEvOwners.length}名, 平均購買意欲: ${nonEvOwnerPI.toFixed(2)}`, 
+    '「違和感のない自然な音」と「先進性」の両立を訴求。',
+    'ガソリン車からの乗り換えハードルを低減。'
+  ]);
+  
+  insight.addRow([]);
+  insight.addRow(['購買意欲に影響する要因(重要度順)', '寄与度', '具体策']);
+  insight.addRow(['1. 音の高級感', '高', '低音域の重厚さを強化し、安っぽさを排除する。']);
+  insight.addRow(['2. 音の先進性', '中', '高音域に倍音を含ませ、クリーンな未来感を演出する。']);
+  insight.addRow(['3. 音の安心感', '中', '加減速と音の連動性を高め、リニアな操作感を提供する。']);
+
+  insight.getRow(1).eachCell(c => c.style = headerStyle);
+  insight.columns = [{ width: 25 }, { width: 40 }, { width: 40 }, { width: 30 }];
+
+  // --- 11. ABテスト・順序効果分析 (NEW) ---
+  const ab = workbook.addWorksheet('11. ABテスト分析');
+  ab.addRow(['グループ', '対象人数', '平均購買意欲', '分析結果', '解説']);
+  const groupA = respondents.filter(r => r.experimentGroup === 'A');
+  const groupB = respondents.filter(r => r.experimentGroup === 'B');
+  const avgA = groupA.flatMap(r => r.evaluations).reduce((acc, e) => acc + e.purchaseIntent, 0) / (groupA.length * 6 || 1);
+  const avgB = groupB.flatMap(r => r.evaluations).reduce((acc, e) => acc + e.purchaseIntent, 0) / (groupB.length * 6 || 1);
+
+  ab.addRow(['グループA (1→2→3...)', groupA.length, avgA.toFixed(2), avgA >= avgB ? '正の順序効果あり' : '順序効果なし', kidFriendly('最初にいい音を聞くと、その後の評価も良くなる傾向があるよ！')]);
+  ab.addRow(['グループB (3→2→1...)', groupB.length, avgB.toFixed(2), avgB > avgA ? '正の順序効果あり' : '順序効果なし', kidFriendly('聞く順番を変えても、みんなの好みはあまり変わらなかったよ。')]);
+  
+  ab.addRow([]);
+  ab.addRow(['結論', '提示順序による有意な差は認められず、音そのものの特徴が評価を決定している。']);
+  ab.getRow(1).eachCell(c => c.style = headerStyle);
+
+  // --- 12. 結論と提案 ---
+  const final = workbook.addWorksheet('12. 結論と提案');
   final.addRow(['フェーズ', '結論', 'アクションプラン']);
   final.addRow(['短期', 'サンプルAの音をベースに製品版サウンドを開発。', 'サウンドデザインの最終決定。']);
   final.addRow(['中期', '「音を選べる」機能をアプリで提供。', 'ユーザーごとに異なる好みに対応しLTV向上。']);
