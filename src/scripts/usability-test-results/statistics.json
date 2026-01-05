@@ -1,0 +1,42 @@
+{
+  "totalParticipants": 200,
+  "averageCompletionRate": 0.6691666666666667,
+  "averageSUSScore": 81.49,
+  "averageSatisfaction": 3.53,
+  "averageTotalTime": 575.5300000000004,
+  "averageTotalErrors": 3.065,
+  "averageTotalClicks": 88.84,
+  "abandonmentRate": 0.53,
+  "taskCompletionRates": [
+    {
+      "taskId": "task1",
+      "taskName": "ランディングページからアンケート開始",
+      "completionRate": 0.87
+    },
+    {
+      "taskId": "task2",
+      "taskName": "同意ページで内容確認・同意",
+      "completionRate": 0.77
+    },
+    {
+      "taskId": "task3",
+      "taskName": "属性情報の入力",
+      "completionRate": 0.705
+    },
+    {
+      "taskId": "task4",
+      "taskName": "音声チェックの完了",
+      "completionRate": 0.66
+    },
+    {
+      "taskId": "task5",
+      "taskName": "最初の音声評価の完了",
+      "completionRate": 0.54
+    },
+    {
+      "taskId": "task6",
+      "taskName": "次の音声評価に進む",
+      "completionRate": 0.47
+    }
+  ]
+}
