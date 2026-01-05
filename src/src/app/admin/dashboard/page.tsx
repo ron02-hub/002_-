@@ -1,11 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { SDRadarChart } from '@/components/analysis/SDRadarChart';
 import { PurchaseIntentHistogram } from '@/components/analysis/PurchaseIntentHistogram';
 import { CrossTabulation } from '@/components/analysis/CrossTabulation';
-import { ValueTree } from '@/components/analysis/ValueTree';
-import { FactorAnalysisChart } from '@/components/analysis/FactorAnalysisChart';
+
+// 重いコンポーネントを動的インポート（コード分割）
+const ValueTree = dynamic(
+  () => import('@/components/analysis/ValueTree').then((mod) => ({ default: mod.ValueTree })),
+  { 
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-96"><p className="text-slate-500">読み込み中...</p></div>
+  }
+);
+
+const FactorAnalysisChart = dynamic(
+  () => import('@/components/analysis/FactorAnalysisChart').then((mod) => ({ default: mod.FactorAnalysisChart })),
+  { 
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-96"><p className="text-slate-500">読み込み中...</p></div>
+  }
+);
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw } from 'lucide-react';

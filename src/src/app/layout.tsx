@@ -18,6 +18,20 @@ export const metadata: Metadata = {
   title: "EV走行音アンケート | EV Sound Survey",
   description: "電気自動車の走行音に関するアンケート調査にご協力ください。あなたの声が未来のEVサウンドデザインを創ります。",
   keywords: ["EV", "電気自動車", "走行音", "アンケート", "サウンドデザイン"],
+  openGraph: {
+    title: "EV走行音アンケート | EV Sound Survey",
+    description: "電気自動車の走行音に関するアンケート調査にご協力ください。",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
 };
 
 export default function RootLayout({
