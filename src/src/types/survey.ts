@@ -57,6 +57,7 @@ export interface Evaluation {
   presentationOrder: number;
   sdScores: SDScores;
   purchaseIntent: number; // 1-7
+  willingnessToPay?: number; // 追加支払可能額 (WTP)
   purchaseIntentConditions?: {
     vehicleModel: string; // "Honda N-Box"
     price: string; // "200万円"

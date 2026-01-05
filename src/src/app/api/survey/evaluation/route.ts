@@ -17,6 +17,7 @@ const evaluationSchema = z.object({
     natural: z.number(),
   }),
   purchaseIntent: z.number().min(1).max(7),
+  willingnessToPay: z.number().optional(),
   freeText: z.string().optional(),
   responseTimeMs: z.number().optional(),
 });
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
         presentationOrder: data.presentationOrder,
         sdScores: data.sdScores,
         purchaseIntent: data.purchaseIntent,
+        willingnessToPay: data.willingnessToPay,
         freeText: data.freeText,
         responseTimeMs: data.responseTimeMs,
       },

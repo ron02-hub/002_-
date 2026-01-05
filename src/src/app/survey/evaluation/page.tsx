@@ -7,6 +7,7 @@ import { MediaPlayer } from '@/components/media/MediaPlayer';
 import { getMediaUrl, getMediaType } from '@/lib/mediaFiles';
 import { SDScaleForm } from '@/components/survey/SDScaleForm';
 import { PurchaseIntentScale } from '@/components/survey/PurchaseIntentScale';
+import { WillingnessToPayScale } from '@/components/survey/WillingnessToPayScale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +33,7 @@ const evaluationSchema = z.object({
     natural: z.number().min(-3).max(3),
   }),
   purchaseIntent: z.number().min(1).max(7),
+  willingnessToPay: z.number().min(0),
   freeText: z.string().optional(),
 });
 
@@ -91,6 +93,7 @@ export default function EvaluationPage() {
     defaultValues: {
       sdScores: defaultSDScores,
       purchaseIntent: 4,
+      willingnessToPay: 0,
       freeText: '',
     },
     mode: 'onChange',
@@ -170,6 +173,7 @@ export default function EvaluationPage() {
       presentationOrder: currentAudioIndex + 1,
       sdScores: data.sdScores,
       purchaseIntent: data.purchaseIntent,
+      willingnessToPay: data.willingnessToPay,
       purchaseIntentConditions: {
         vehicleModel: 'Honda N-Box',
         price: '200万円',
@@ -193,6 +197,7 @@ export default function EvaluationPage() {
       // フォームをリセット (reloadの代わりに状態リセット)
       setValue('sdScores', defaultSDScores);
       setValue('purchaseIntent', 4);
+      setValue('willingnessToPay', 0);
       setValue('freeText', '');
       
       // ページのトップに戻る
@@ -312,6 +317,19 @@ export default function EvaluationPage() {
           <PurchaseIntentScale
             value={purchaseIntent}
             onChange={(value) => setValue('purchaseIntent', value)}
+            disabled={!hasPlayed}
+          />
+        </motion.div>
+
+        {/* 価格受容性評価 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <WillingnessToPayScale
+            value={watch('willingnessToPay')}
+            onChange={(value) => setValue('willingnessToPay', value)}
             disabled={!hasPlayed}
           />
         </motion.div>
