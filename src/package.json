@@ -26,7 +26,8 @@
     "db:studio": "prisma studio",
     "usability:generate": "tsx scripts/generate-usability-test-results.ts",
     "usability:export": "tsx scripts/export-usability-test-to-excel.ts",
-    "usability:all": "npm run usability:generate && npm run usability:export"
+    "usability:all": "npm run usability:generate && npm run usability:export",
+    "marketing:report": "tsx scripts/generate-marketing-report.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -46,6 +47,7 @@
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.23.26",
     "howler": "^2.2.4",
