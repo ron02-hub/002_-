@@ -1,3 +1,11 @@
+// .envファイルを読み込む
+import { config } from 'dotenv';
+import { resolve } from 'path';
+import { existsSync } from 'fs';
+const envPath = resolve(process.cwd(), '.env');
+const srcEnvPath = resolve(process.cwd(), 'src', '.env');
+config({ path: existsSync(envPath) ? envPath : srcEnvPath });
+
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -227,8 +235,8 @@ async function generateMockData(count: number = 200) {
 
       // 評価データを作成
       await Promise.all(
-        data.evaluations.map((eval) =>
-          prisma.evaluation.create({ data: eval })
+        data.evaluations.map((evaluation) =>
+          prisma.evaluation.create({ data: evaluation })
         )
       );
 
