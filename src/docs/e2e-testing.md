@@ -164,9 +164,38 @@ jobs:
 - 要素が表示されるまで待機する処理を追加
 - `waitForSelector`を使用
 
+## CI/CD統合
+
+### GitHub Actions
+
+本プロジェクトでは、GitHub Actionsを使用してE2Eテストを自動実行しています。
+
+#### ワークフロー
+
+- **`.github/workflows/e2e-tests.yml`**: E2Eテストを実行
+  - プルリクエストとプッシュ時に自動実行
+  - Playwrightブラウザのセットアップ
+  - テスト結果のアーティファクトアップロード
+
+- **`.github/workflows/ci.yml`**: リント、フォーマットチェック、ユニットテスト、ビルドを実行
+
+#### テスト結果の確認
+
+1. GitHubのプルリクエストページで「Checks」タブを確認
+2. 失敗したテストの詳細を確認
+3. アーティファクトからテストレポート、動画、スクリーンショットをダウンロード
+
+#### ローカルでのCI環境の再現
+
+```bash
+# CI環境と同じ設定でテストを実行
+CI=true npm run test:e2e
+```
+
 ## 参考資料
 
 - [Playwright公式ドキュメント](https://playwright.dev/)
 - [Playwright Best Practices](https://playwright.dev/docs/best-practices)
+- [GitHub Actions](https://docs.github.com/en/actions)
 - [Playwright API Reference](https://playwright.dev/docs/api/class-test)
 

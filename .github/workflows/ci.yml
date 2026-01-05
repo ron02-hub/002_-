@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    name: Lint and Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./src
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./src
+        run: npm run lint
+
+      - name: Check code formatting
+        working-directory: ./src
+        run: npm run format:check
+
+      - name: Run unit tests
+        working-directory: ./src
+        run: npm run test
+        env:
+          CI: true
+
+      - name: Upload coverage reports
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./src/coverage
+          flags: unittests
+          fail_ci_if_error: false
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./src
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: ./src
+        run: npm run db:generate
+
+      - name: Build application
+        working-directory: ./src
+        run: npm run build
+        env:
+          NODE_ENV: production
+
