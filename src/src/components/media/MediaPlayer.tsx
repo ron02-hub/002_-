@@ -13,7 +13,8 @@ import {
   VolumeX,
   Loader2,
   Video,
-  Music
+  Music,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -101,10 +102,22 @@ export function MediaPlayer({
   if (error) {
     return (
       <div className={cn(
-        'flex items-center justify-center p-4 bg-destructive/10 rounded-lg',
+        'flex flex-col items-center justify-center p-6 bg-destructive/10 rounded-lg border border-destructive/20',
         className
       )}>
-        <p className="text-destructive text-sm">{error}</p>
+        <AlertCircle className="w-8 h-8 text-destructive mb-3" />
+        <p className="text-destructive text-sm font-medium mb-2 text-center">{error}</p>
+        <p className="text-xs text-muted-foreground text-center mb-4">
+          ページを再読み込みするか、しばらく時間をおいてから再度お試しください。
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.location.reload()}
+          className="text-xs"
+        >
+          ページを再読み込み
+        </Button>
       </div>
     );
   }

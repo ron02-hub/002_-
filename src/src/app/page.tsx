@@ -35,7 +35,10 @@ export default function LandingPage() {
   ];
 
   const handleStart = () => {
-    router.push('/survey/consent');
+    const params = new URLSearchParams(window.location.search);
+    const queryString = params.toString();
+    const targetUrl = `/survey/consent${queryString ? `?${queryString}` : ''}`;
+    router.push(targetUrl);
   };
 
   return (

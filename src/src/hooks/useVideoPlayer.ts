@@ -39,23 +39,38 @@ export function useVideoPlayer(
   const [error, setError] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const timeUpdateIntervalRef = useRef<number | null>(null);
 
   // 動画要素のイベントハンドラ設定
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !src) {
+      // srcがnullの場合は、動画要素をクリーンアップ
+      if (video) {
+        video.src = '';
+        video.load();
+      }
+      setIsLoaded(false);
+      setIsLoading(false);
       return;
     }
 
     // すでに同じsrcが設定されている場合は、イベントハンドラのみ更新
-    if (video.src.includes(src)) {
+    if (video.src && video.src.includes(src)) {
       // イベントリスナーの更新ロジック（省略可能だが安全のために）
     } else {
       setIsLoading(true);
       setError(null);
       setIsLoaded(false);
       
-      // 動画のsrcを設定
+      // 古い動画リソースをクリーンアップ
+      if (video.src) {
+        video.pause();
+        video.src = '';
+        video.load();
+      }
+      
+      // 新しい動画のsrcを設定
       video.src = src;
       video.volume = volume;
       video.load();
@@ -71,8 +86,16 @@ export function useVideoPlayer(
       onLoad?.();
     };
 
+    // timeupdateイベントは頻繁に発火するため、throttleを実装
+    let lastUpdateTime = 0;
+    const THROTTLE_INTERVAL = 100; // 100msごとに更新（10fps）
+
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
+      const now = Date.now();
+      if (now - lastUpdateTime >= THROTTLE_INTERVAL) {
+        setCurrentTime(video.currentTime);
+        lastUpdateTime = now;
+      }
     };
 
     const handlePlay = () => {
@@ -94,9 +117,36 @@ export function useVideoPlayer(
       setIsLoading(false);
       setIsLoaded(false);
       setIsPlaying(false);
-      const errorMessage = video.error
-        ? `動画の読み込みに失敗しました: ${video.error.message || '不明なエラー'}`
-        : '動画の読み込みに失敗しました';
+      
+      let errorMessage = '動画の読み込みに失敗しました';
+      
+      if (video.error) {
+        // より詳細なエラーメッセージを生成
+        switch (video.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMessage = '動画の読み込みが中断されました。ネットワーク接続を確認してください。';
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMessage = '動画ファイルの形式がサポートされていません。別のブラウザでお試しください。';
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = '動画ファイルの形式がサポートされていません。MP4形式のファイルが必要です。';
+            break;
+          default:
+            errorMessage = `動画の読み込みに失敗しました: ${video.error.message || '不明なエラー'}`;
+        }
+      } else {
+        // video.errorがnullの場合、ネットワークエラーの可能性
+        if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+          errorMessage = '動画ファイルが見つかりません。ファイルパスを確認してください。';
+        } else if (video.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+          errorMessage = '動画ファイルが読み込まれていません。ページを再読み込みしてください。';
+        }
+      }
+      
       setError(errorMessage);
       onError?.(video.error);
     };
@@ -121,6 +171,7 @@ export function useVideoPlayer(
 
     // クリーンアップ
     return () => {
+      // イベントリスナーを削除
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
@@ -129,8 +180,19 @@ export function useVideoPlayer(
       video.removeEventListener('error', handleError);
       video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('canplay', handleCanPlay);
+      
+      // 動画リソースをクリーンアップ（メモリリーク防止）
+      video.pause();
+      video.src = '';
+      video.load();
+      
+      // タイマーをクリア
+      if (timeUpdateIntervalRef.current) {
+        clearInterval(timeUpdateIntervalRef.current);
+        timeUpdateIntervalRef.current = null;
+      }
     };
-  }, [src, onLoad, onEnd, onError]); // volumeを削除
+  }, [src, onLoad, onEnd, onError, volume]);
 
   // 音量が変更されたときに動画要素に反映
   useEffect(() => {

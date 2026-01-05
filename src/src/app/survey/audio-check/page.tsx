@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SurveyLayout } from '@/components/layout/SurveyLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MediaPlayer } from '@/components/media/MediaPlayer';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useSurveyStore } from '@/stores/surveyStore';
 import { motion } from 'framer-motion';
 import { 
@@ -16,29 +18,50 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+// 音声テストの選択肢
+const AUDIO_OPTIONS = [
+  { id: 'cat', label: '猫の鳴き声', isCorrect: true },
+  { id: 'dog', label: '犬の鳴き声', isCorrect: false },
+  { id: 'bird', label: '鳥のさえずり', isCorrect: false },
+  { id: 'car', label: '車のエンジン音', isCorrect: false },
+  { id: 'rain', label: '雨の音', isCorrect: false },
+] as const;
+
 export default function AudioCheckPage() {
   const router = useRouter();
   const { setHeadphoneChecked } = useSurveyStore();
   const [hasPlayed, setHasPlayed] = useState(false);
-  const [canHear, setCanHear] = useState<boolean | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+
+  // テストモードの確認
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('test') === 'true') {
+        console.log('[TestMode] Audio check bypassed');
+        setHasPlayed(true);
+      }
+    }
+  }, []);
 
   const handlePlayComplete = () => {
     setHasPlayed(true);
   };
 
-  const handleConfirmHearing = (heard: boolean) => {
-    setCanHear(heard);
-  };
-
   const handleContinue = () => {
-    if (canHear) {
+    // 猫の鳴き声（正解）を選んだ場合のみ先に進める
+    if (selectedAnswer === 'cat') {
       setHeadphoneChecked(true);
-      router.push('/survey/evaluation');
+      const params = new URLSearchParams(window.location.search);
+      const queryString = params.toString();
+      const targetUrl = `/survey/evaluation${queryString ? `?${queryString}` : ''}`;
+      router.push(targetUrl);
     }
   };
 
   // テスト用の音声URL（音声テストディレクトリのファイルを使用）
   const testMediaUrl = '/api/media/files/猫の鳴き声2.mp3?type=audio-test';
+  const isCorrectAnswer = selectedAnswer === 'cat';
 
   return (
     <SurveyLayout
@@ -122,66 +145,88 @@ export default function AudioCheckPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                 <h2 className="font-semibold text-slate-800">
-                  Step 2: 音声は正常に再生されましたか？
+                  Step 2: 聞こえた音声は何でしたか？
                 </h2>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant={canHear === true ? 'default' : 'outline'}
-                  size="lg"
-                  onClick={() => handleConfirmHearing(true)}
-                  className={`h-auto py-6 ${
-                    canHear === true 
-                      ? 'bg-emerald-500 hover:bg-emerald-600' 
-                      : 'hover:bg-emerald-50 hover:border-emerald-300'
-                  }`}
-                  disabled={!hasPlayed}
-                >
-                  <div className="text-center">
-                    <CheckCircle2 className={`w-8 h-8 mx-auto mb-2 ${canHear === true ? 'text-white' : 'text-emerald-500'}`} />
-                    <span className="block font-medium">
-                      はい、正常に再生されました
-                    </span>
-                  </div>
-                </Button>
+              <p className="text-slate-600 text-sm">
+                再生した音声が何の音だったか、以下の選択肢から選んでください。
+              </p>
 
-                <Button
-                  variant={canHear === false ? 'default' : 'outline'}
-                  size="lg"
-                  onClick={() => handleConfirmHearing(false)}
-                  className={`h-auto py-6 ${
-                    canHear === false 
-                      ? 'bg-amber-500 hover:bg-amber-600' 
-                      : 'hover:bg-amber-50 hover:border-amber-300'
-                  }`}
-                  disabled={!hasPlayed}
-                >
-                  <div className="text-center">
-                    <AlertCircle className={`w-8 h-8 mx-auto mb-2 ${canHear === false ? 'text-white' : 'text-amber-500'}`} />
-                    <span className="block font-medium">
-                      いいえ、再生されませんでした
-                    </span>
+              <RadioGroup
+                value={selectedAnswer || ''}
+                onValueChange={setSelectedAnswer}
+                disabled={!hasPlayed}
+                className="space-y-3"
+              >
+                {AUDIO_OPTIONS.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all ${
+                      selectedAnswer === option.id
+                        ? option.isCorrect
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : 'border-red-500 bg-red-50'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <RadioGroupItem value={option.id} id={option.id} />
+                    <Label
+                      htmlFor={option.id}
+                      className="flex-1 cursor-pointer font-medium text-slate-800"
+                    >
+                      {option.label}
+                    </Label>
+                    {selectedAnswer === option.id && (
+                      <div className="flex-shrink-0">
+                        {option.isCorrect ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        ) : (
+                          <AlertCircle className="w-5 h-5 text-red-500" />
+                        )}
+                      </div>
+                    )}
                   </div>
-                </Button>
-              </div>
+                ))}
+              </RadioGroup>
 
-              {canHear === false && (
+              {selectedAnswer && !isCorrectAnswer && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="p-4 bg-amber-50 border border-amber-200 rounded-lg"
+                  className="p-4 bg-red-50 border border-red-200 rounded-lg"
                 >
-                  <h4 className="font-medium text-amber-800 mb-2">
-                    音声が再生されない場合
-                  </h4>
-                  <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• デバイスの音量が適切か確認してください</li>
-                    <li>• ヘッドホン/イヤホンが正しく接続されているか確認してください</li>
-                    <li>• ブラウザの音声設定がミュートになっていないか確認してください</li>
-                    <li>• 音声コーデック（MP3など）がサポートされているか確認してください</li>
-                    <li>• 別のブラウザでお試しください</li>
-                  </ul>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-red-800 mb-1">
+                        正しくありません
+                      </h4>
+                      <p className="text-sm text-red-700">
+                        もう一度音声を再生して、正しい答えを選んでください。
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {selectedAnswer && isCorrectAnswer && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
+                >
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-emerald-800 mb-1">
+                        正解です！
+                      </h4>
+                      <p className="text-sm text-emerald-700">
+                        音声が正しく聞こえていることが確認できました。次へ進むことができます。
+                      </p>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </CardContent>
@@ -197,7 +242,7 @@ export default function AudioCheckPage() {
         >
           <Button
             onClick={handleContinue}
-            disabled={canHear !== true}
+            disabled={!isCorrectAnswer}
             size="lg"
             className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-medium disabled:opacity-50"
           >

@@ -50,7 +50,10 @@ export default function DemographicsPage() {
 
   const onSubmit = (data: DemographicsFormData) => {
     setDemographics(data);
-    router.push('/survey/audio-check');
+    const params = new URLSearchParams(window.location.search);
+    const queryString = params.toString();
+    const targetUrl = `/survey/audio-check${queryString ? `?${queryString}` : ''}`;
+    router.push(targetUrl);
   };
 
   const sensitivityLabels = [

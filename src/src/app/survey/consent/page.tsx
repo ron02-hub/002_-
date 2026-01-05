@@ -30,7 +30,10 @@ export default function ConsentPage() {
   const handleSubmit = () => {
     if (allAgreed) {
       setConsent(agreements);
-      router.push('/survey/demographics');
+      const params = new URLSearchParams(window.location.search);
+      const queryString = params.toString();
+      const targetUrl = `/survey/demographics${queryString ? `?${queryString}` : ''}`;
+      router.push(targetUrl);
     }
   };
 
