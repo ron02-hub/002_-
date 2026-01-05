@@ -60,6 +60,7 @@ model Evaluation {
   presentationOrder         Int      // 提示順序
   sdScores                  Json     // { quiet: 2, pleasant: 1, natural: 1, ... }
   purchaseIntent            Int      // 購買意欲 (1-7)
+  willingnessToPay          Int?     // 追加支払可能額 (WTP)
   purchaseIntentConditions  Json?    // 前提条件 { vehicleModel, price, fuelEconomy, otherFactors }
   freeText                  String?  // 自由記述
   responseTimeMs            Int?     // 回答時間

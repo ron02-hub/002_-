@@ -48,6 +48,20 @@ function generatePurchaseIntent(): number {
   return 7; // 10%: 非常に購入したい
 }
 
+// 追加支払可能額 (WTP) 生成
+function generateWillingnessToPay(purchaseIntent: number): number {
+  // 購買意欲に連動させる（意欲が高いほど金額も上がりやすくする）
+  const base = purchaseIntent * 5000; // 5,000円〜35,000円
+  const noise = Math.random() * 20000;
+  const wtp = base + noise;
+
+  const wtpOptions = [0, 10000, 30000, 50000, 100000, 200000, 300000];
+  // 最も近い選択肢に丸める
+  return wtpOptions.reduce((prev, curr) => 
+    Math.abs(curr - wtp) < Math.abs(prev - wtp) ? curr : prev
+  );
+}
+
 // 自由記述のサンプル
 const FREE_TEXT_SAMPLES = [
   '低音が響いていて重厚感があった',
@@ -147,26 +161,30 @@ async function generateMockData(count: number = 200) {
       };
 
       // 評価データ（各音声サンプルに対して）
-      const evaluations = audioSampleIds.map((audioId, idx) => ({
-        respondentId,
-        audioSampleId: audioId,
-        presentationOrder: idx + 1,
-        sdScores: generateSDScores(),
-        purchaseIntent: generatePurchaseIntent(),
-        purchaseIntentConditions: {
-          vehicleModel: 'Honda N-Box',
-          price: '200万円',
-          fuelEconomy: '20.0km/L',
-          otherFactors: [
-            '維持費（税金・保険料）の安さ',
-            '先進安全装備（Honda SENSING）の充実',
-            '室内空間の広さと使い勝手',
-            'リセールバリュー（下取り価格）の高さ',
-          ],
-        },
-        freeText: FREE_TEXT_SAMPLES[Math.floor(Math.random() * FREE_TEXT_SAMPLES.length)],
-        responseTimeMs: Math.floor(Math.random() * 30000) + 10000, // 10-40秒
-      }));
+      const evaluations = audioSampleIds.map((audioId, idx) => {
+        const purchaseIntent = generatePurchaseIntent();
+        return {
+          respondentId,
+          audioSampleId: audioId,
+          presentationOrder: idx + 1,
+          sdScores: generateSDScores(),
+          purchaseIntent,
+          willingnessToPay: generateWillingnessToPay(purchaseIntent),
+          purchaseIntentConditions: {
+            vehicleModel: 'Honda N-Box',
+            price: '200万円',
+            fuelEconomy: '20.0km/L',
+            otherFactors: [
+              '維持費（税金・保険料）の安さ',
+              '先進安全装備（Honda SENSING）の充実',
+              '室内空間の広さと使い勝手',
+              'リセールバリュー（下取り価格）の高さ',
+            ],
+          },
+          freeText: FREE_TEXT_SAMPLES[Math.floor(Math.random() * FREE_TEXT_SAMPLES.length)],
+          responseTimeMs: Math.floor(Math.random() * 30000) + 10000, // 10-40秒
+        };
+      });
 
       // 最良・最悪音の選択（評価済みの音声から選択）
       const bestAudioId = audioSampleIds[Math.floor(Math.random() * audioSampleIds.length)];

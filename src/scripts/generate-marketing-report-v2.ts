@@ -156,16 +156,31 @@ async function generateReport() {
   });
   sd.getRow(1).eachCell(c => c.style = headerStyle);
 
-  // --- 4. 購買意欲分析 ---
-  const pi = workbook.addWorksheet('4. 購買意欲分析');
-  pi.addRow(['音声名', '平均購買意欲(1-7)', '「絶対買いたい」層の割合', '分析結果']);
+  // --- 4. 購買意欲・価格受容性分析 ---
+  const pi = workbook.addWorksheet('4. 購買意欲・価格受容性分析');
+  pi.addRow(['音声名', '平均購買意欲(1-7)', '平均WTP(追加支払額)', '最高WTP(30万〜)の割合', '経済価値試算(市場単価+)', '分析結果']);
   audioSamples.forEach(a => {
     const evals = respondents.flatMap(r => r.evaluations).filter(e => e.audioSampleId === a.id);
-    const avg = evals.reduce((acc, curr) => acc + curr.purchaseIntent, 0) / evals.length;
-    const high = (evals.filter(e => e.purchaseIntent >= 6).length / evals.length * 100).toFixed(1);
-    pi.addRow([a.name, avg.toFixed(2), `${high}%`, avg > 5 ? '主力製品に採用すべき' : '改善が必要']);
+    const avgPI = evals.reduce((acc, curr) => acc + curr.purchaseIntent, 0) / evals.length;
+    const avgWTP = evals.reduce((acc, curr) => acc + (curr.willingnessToPay || 0), 0) / evals.length;
+    const highWTP = (evals.filter(e => (e.willingnessToPay || 0) >= 300000).length / evals.length * 100).toFixed(1);
+    
+    // 経済価値試算：平均WTPをそのまま「音声による付加価値」として定義
+    const economicValue = `+${Math.round(avgWTP).toLocaleString()}円`;
+    
+    pi.addRow([
+      a.name, 
+      avgPI.toFixed(2), 
+      `${Math.round(avgWTP).toLocaleString()}円`, 
+      `${highWTP}%`, 
+      economicValue,
+      avgPI > 5 ? '主力製品に採用すべき' : '改善が必要'
+    ]);
   });
+  pi.addRow([]);
+  pi.addRow(['【解説】', '平均WTPは、ユーザーがその音のために追加で払っても良いと答えた金額の平均です。これが高いほど、収益への貢献度が高いと言えます。']);
   pi.getRow(1).eachCell(c => c.style = headerStyle);
+  pi.columns = [{ width: 20 }, { width: 20 }, { width: 20 }, { width: 25 }, { width: 25 }, { width: 20 }];
 
   // --- 5. 因子分析 (NEW) ---
   const fa = workbook.addWorksheet('5. 因子分析');
@@ -285,10 +300,10 @@ async function generateReport() {
   ]);
   
   insight.addRow([]);
-  insight.addRow(['購買意欲に影響する要因(重要度順)', '寄与度', '具体策']);
-  insight.addRow(['1. 音の高級感', '高', '低音域の重厚さを強化し、安っぽさを排除する。']);
-  insight.addRow(['2. 音の先進性', '中', '高音域に倍音を含ませ、クリーンな未来感を演出する。']);
-  insight.addRow(['3. 音の安心感', '中', '加減速と音の連動性を高め、リニアな操作感を提供する。']);
+  insight.addRow(['購買意欲・価格受容性に影響する要因(重要度順)', '寄与度', '具体策', '売上インパクト']);
+  insight.addRow(['1. 音の高級感', '高', '低音域の重厚さを強化し、安っぽさを排除する。', 'WTP +1.5万円期待']);
+  insight.addRow(['2. 音の先進性', '中', '高音域に倍音を含ませ、クリーンな未来感を演出する。', 'WTP +0.8万円期待']);
+  insight.addRow(['3. 音の安心感', '中', '加減速と音の連動性を高め、リニアな操作感を提供する。', 'WTP +0.5万円期待']);
 
   insight.getRow(1).eachCell(c => c.style = headerStyle);
   insight.columns = [{ width: 25 }, { width: 40 }, { width: 40 }, { width: 30 }];
