@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // 回答者
@@ -94,7 +94,7 @@ model Triad {
   audio1Id         String
   audio2Id         String
   audio3Id         String
-  similarPair      String[] // [audio1Id, audio2Id]
+  similarPair      String // JSON文字列として保存 ["audio1Id", "audio2Id"]
   differentOne     String   // 異なる1つのID
   similarityReason String   // 類似理由
   differenceReason String   // 相違理由
