@@ -86,7 +86,9 @@ export default function DemographicsPage() {
 
               {/* 年齢 */}
               <div className="space-y-3">
-                <Label className="text-slate-700">年齢 *</Label>
+                <Label className="text-slate-700" htmlFor="ageGroup">
+                  年齢 <span className="text-red-500" aria-label="必須">*</span>
+                </Label>
                 <Controller
                   name="ageGroup"
                   control={control}
@@ -95,6 +97,9 @@ export default function DemographicsPage() {
                       onValueChange={field.onChange}
                       value={field.value}
                       className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+                      aria-required="true"
+                      aria-invalid={!!errors.ageGroup}
+                      aria-describedby={errors.ageGroup ? 'ageGroup-error' : undefined}
                     >
                       {AGE_GROUPS.map((age) => (
                         <div key={age.value}>
@@ -105,7 +110,7 @@ export default function DemographicsPage() {
                           />
                           <Label
                             htmlFor={age.value}
-                            className="flex items-center justify-center px-4 py-3 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:bg-emerald-50 peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:text-emerald-700 hover:bg-slate-50"
+                            className="flex items-center justify-center px-4 py-3 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:bg-emerald-50 peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:text-emerald-700 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2"
                           >
                             {age.label}
                           </Label>
@@ -115,13 +120,17 @@ export default function DemographicsPage() {
                   )}
                 />
                 {errors.ageGroup && (
-                  <p className="text-sm text-red-500">{errors.ageGroup.message}</p>
+                  <p id="ageGroup-error" className="text-sm text-red-500" role="alert" aria-live="polite">
+                    {errors.ageGroup.message}
+                  </p>
                 )}
               </div>
 
               {/* 性別 */}
               <div className="space-y-3">
-                <Label className="text-slate-700">性別 *</Label>
+                <Label className="text-slate-700" htmlFor="gender">
+                  性別 <span className="text-red-500" aria-label="必須">*</span>
+                </Label>
                 <Controller
                   name="gender"
                   control={control}
@@ -130,6 +139,9 @@ export default function DemographicsPage() {
                       onValueChange={field.onChange}
                       value={field.value}
                       className="grid grid-cols-2 gap-2"
+                      aria-required="true"
+                      aria-invalid={!!errors.gender}
+                      aria-describedby={errors.gender ? 'gender-error' : undefined}
                     >
                       {GENDERS.map((gender) => (
                         <div key={gender.value}>
@@ -140,7 +152,7 @@ export default function DemographicsPage() {
                           />
                           <Label
                             htmlFor={gender.value}
-                            className="flex items-center justify-center px-4 py-3 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:bg-emerald-50 peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:text-emerald-700 hover:bg-slate-50"
+                            className="flex items-center justify-center px-4 py-3 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:bg-emerald-50 peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:text-emerald-700 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2"
                           >
                             {gender.label}
                           </Label>
@@ -150,33 +162,50 @@ export default function DemographicsPage() {
                   )}
                 />
                 {errors.gender && (
-                  <p className="text-sm text-red-500">{errors.gender.message}</p>
+                  <p id="gender-error" className="text-sm text-red-500" role="alert" aria-live="polite">
+                    {errors.gender.message}
+                  </p>
                 )}
               </div>
 
               {/* 都道府県 */}
               <div className="space-y-3">
-                <Label className="text-slate-700">お住まいの地域 *</Label>
+                <Label className="text-slate-700" htmlFor="prefecture">
+                  お住まいの地域 <span className="text-red-500" aria-label="必須">*</span>
+                </Label>
                 <Controller
                   name="prefecture"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="都道府県を選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PREFECTURES.map((pref) => (
-                          <SelectItem key={pref} value={pref}>
-                            {pref}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                      >
+                        <SelectTrigger 
+                          id="prefecture" 
+                          className="w-full"
+                          aria-required="true"
+                          aria-invalid={!!errors.prefecture}
+                          aria-describedby={errors.prefecture ? 'prefecture-error' : undefined}
+                        >
+                          <SelectValue placeholder="都道府県を選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PREFECTURES.map((pref) => (
+                            <SelectItem key={pref} value={pref}>
+                              {pref}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
                 />
                 {errors.prefecture && (
-                  <p className="text-sm text-red-500">{errors.prefecture.message}</p>
+                  <p id="prefecture-error" className="text-sm text-red-500" role="alert" aria-live="polite">
+                    {errors.prefecture.message}
+                  </p>
                 )}
               </div>
             </CardContent>

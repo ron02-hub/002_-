@@ -281,7 +281,8 @@ export default function EvaluationPage() {
                 showVideo={true}
               />
               {!hasPlayed && (
-                <p className="text-sm text-amber-600 mt-4 text-center">
+                <p className="text-sm text-amber-600 mt-4 text-center" role="alert" aria-live="polite">
+                  <span className="sr-only">注意: </span>
                   ⚠️ 音声を最後まで再生してから評価してください
                 </p>
               )}
@@ -324,19 +325,22 @@ export default function EvaluationPage() {
           <Card className="bg-white shadow-sm">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-4">
-                <MessageSquare className="w-5 h-5 text-emerald-600" />
-                <Label className="text-base font-semibold text-slate-800">
+                <MessageSquare className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+                <Label htmlFor="freeText" className="text-base font-semibold text-slate-800">
                   自由記述（任意）
                 </Label>
               </div>
-              <p className="text-sm text-slate-600 mb-4">
+              <p id="freeText-description" className="text-sm text-slate-600 mb-4">
                 この走行音について、感じたことや気づいたことを自由にお書きください。
               </p>
               <Textarea
                 {...control.register('freeText')}
+                id="freeText"
                 placeholder="例：低音が響いていて重厚感があった。モーター音が心地よかった。"
                 className="min-h-24"
                 disabled={!hasPlayed}
+                aria-label="自由記述入力欄（任意）"
+                aria-describedby="freeText-description"
               />
             </CardContent>
           </Card>

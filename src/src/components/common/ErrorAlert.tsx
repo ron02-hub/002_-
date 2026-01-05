@@ -28,8 +28,14 @@ export function ErrorAlert({
   };
 
   return (
-    <Alert variant="destructive" className={className}>
-      <AlertTriangle className="h-4 w-4" />
+    <Alert 
+      variant="destructive" 
+      className={className}
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <AlertTriangle className="h-4 w-4" aria-hidden="true" />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription className="flex items-start justify-between gap-2">
         <span>{message}</span>
@@ -39,8 +45,9 @@ export function ErrorAlert({
             size="icon"
             onClick={handleDismiss}
             className="h-4 w-4 flex-shrink-0"
+            aria-label="エラーメッセージを閉じる"
           >
-            <X className="h-3 w-3" />
+            <X className="h-3 w-3" aria-hidden="true" />
           </Button>
         )}
       </AlertDescription>

@@ -120,9 +120,10 @@ export default function LandingPage() {
                   onClick={handleStart}
                   size="lg"
                   className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-slate-900 font-semibold px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40 hover:scale-105"
+                  aria-label="アンケートを開始する"
                 >
                   アンケートを開始する
-                  <ChevronRight className="w-5 h-5 ml-2" />
+                  <ChevronRight className="w-5 h-5 ml-2" aria-hidden="true" />
                 </Button>
               </motion.div>
             </motion.div>

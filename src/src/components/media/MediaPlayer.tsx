@@ -4,7 +4,7 @@ import { useMediaPlayer } from '@/hooks/useMediaPlayer';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { AudioWaveform } from '../audio/AudioWaveform';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { 
   Play, 
   Pause, 
@@ -99,6 +99,64 @@ export function MediaPlayer({
     setVolume(volume > 0 ? 0 : 0.8);
   };
 
+  // キーボードショートカット対応
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // メディアプレーヤーがフォーカスされている場合のみ処理
+      // 入力フィールドにフォーカスがある場合は無視
+      if (
+        e.target instanceof HTMLElement && 
+        (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const mediaPlayer = document.querySelector('[data-media-player]');
+      if (!mediaPlayer || !mediaPlayer.contains(e.target as Node)) {
+        return;
+      }
+
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          if (isLoaded) {
+            handlePlayPause();
+          }
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (isLoaded && duration > 0) {
+            seek(Math.max(0, currentTime - 10));
+          }
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (isLoaded && duration > 0) {
+            seek(Math.min(duration, currentTime + 10));
+          }
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setVolume(Math.min(1, volume + 0.1));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setVolume(Math.max(0, volume - 0.1));
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          toggleMute();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLoaded, currentTime, duration, volume]);
+
   if (error) {
     return (
       <div className={cn(
@@ -168,13 +226,19 @@ export function MediaPlayer({
     }
 
     return (
-      <div className={cn(
-        'flex flex-col gap-4 p-6 bg-card border rounded-xl shadow-sm',
-        className
-      )}>
+      <div 
+        className={cn(
+          'flex flex-col gap-4 p-6 bg-card border rounded-xl shadow-sm',
+          className
+        )}
+        data-media-player
+        tabIndex={0}
+        role="group"
+        aria-label={title || '動画プレーヤー'}
+      >
         {title && (
           <h3 className="text-lg font-semibold text-center flex items-center justify-center gap-2">
-            <Video className="w-5 h-5 text-emerald-600" />
+            <Video className="w-5 h-5 text-emerald-600" aria-hidden="true" />
             {title}
           </h3>
         )}
@@ -187,17 +251,25 @@ export function MediaPlayer({
               className="w-full h-auto max-h-96"
               playsInline
               preload="metadata"
+              aria-label={title || '動画'}
+              aria-describedby={title ? undefined : 'video-description'}
             />
+            {title && (
+              <div id="video-description" className="sr-only">
+                {title}の動画プレーヤー
+              </div>
+            )}
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <Loader2 className="w-8 h-8 animate-spin text-white" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50" aria-live="polite" aria-atomic="true">
+                <Loader2 className="w-8 h-8 animate-spin text-white" aria-hidden="true" />
+                <span className="sr-only">動画を読み込んでいます</span>
               </div>
             )}
           </div>
         )}
 
         {/* 再生コントロール */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4" role="group" aria-label="メディア再生コントロール">
           <Button
             type="button"
             variant="ghost"
@@ -205,8 +277,9 @@ export function MediaPlayer({
             onClick={stop}
             disabled={!isLoaded}
             className="h-10 w-10"
+            aria-label="停止して最初に戻る"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
           </Button>
 
           <Button
@@ -216,21 +289,23 @@ export function MediaPlayer({
             onClick={handlePlayPause}
             disabled={!isLoaded}
             className="h-14 w-14 rounded-full"
+            aria-label={isPlaying ? '一時停止' : '再生'}
+            aria-pressed={isPlaying}
           >
             {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
             ) : isPlaying ? (
-              <Pause className="h-6 w-6" />
+              <Pause className="h-6 w-6" aria-hidden="true" />
             ) : (
-              <Play className="h-6 w-6 ml-1" />
+              <Play className="h-6 w-6 ml-1" aria-hidden="true" />
             )}
           </Button>
 
-          <div className="w-10" /> {/* スペーサー */}
+          <div className="w-10" aria-hidden="true" /> {/* スペーサー */}
         </div>
 
         {/* プログレスバー */}
-        <div className="space-y-2">
+        <div className="space-y-2" role="group" aria-label="再生位置">
           <Slider
             value={[progress]}
             onValueChange={handleSeek}
@@ -238,8 +313,13 @@ export function MediaPlayer({
             step={0.1}
             disabled={!isLoaded}
             className="cursor-pointer"
+            aria-label="再生位置"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
           />
-          <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+          <div className="flex justify-between text-xs text-muted-foreground tabular-nums" aria-hidden="true">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -247,18 +327,20 @@ export function MediaPlayer({
 
         {/* 音量コントロール */}
         {showVolumeControl && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" role="group" aria-label="音量コントロール">
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={toggleMute}
               className="h-8 w-8"
+              aria-label={volume === 0 ? 'ミュート解除' : 'ミュート'}
+              aria-pressed={volume === 0}
             >
               {volume === 0 ? (
-                <VolumeX className="h-4 w-4" />
+                <VolumeX className="h-4 w-4" aria-hidden="true" />
               ) : (
-                <Volume2 className="h-4 w-4" />
+                <Volume2 className="h-4 w-4" aria-hidden="true" />
               )}
             </Button>
             <Slider
@@ -267,6 +349,11 @@ export function MediaPlayer({
               max={100}
               step={1}
               className="w-24"
+              aria-label="音量"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={volume * 100}
+              aria-valuetext={`${Math.round(volume * 100)}%`}
             />
           </div>
         )}
@@ -288,13 +375,15 @@ export function MediaPlayer({
           onClick={handlePlayPause}
           disabled={!isLoaded}
           className="h-10 w-10 rounded-full"
+          aria-label={isPlaying ? '一時停止' : '再生'}
+          aria-pressed={isPlaying}
         >
           {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
           ) : isPlaying ? (
-            <Pause className="h-5 w-5" />
+            <Pause className="h-5 w-5" aria-hidden="true" />
           ) : (
-            <Play className="h-5 w-5 ml-0.5" />
+            <Play className="h-5 w-5 ml-0.5" aria-hidden="true" />
           )}
         </Button>
 
@@ -312,13 +401,19 @@ export function MediaPlayer({
   }
 
   return (
-    <div className={cn(
-      'flex flex-col gap-4 p-6 bg-card border rounded-xl shadow-sm',
-      className
-    )}>
+    <div 
+      className={cn(
+        'flex flex-col gap-4 p-6 bg-card border rounded-xl shadow-sm',
+        className
+      )}
+      data-media-player
+      tabIndex={0}
+      role="group"
+      aria-label={title || 'メディアプレーヤー'}
+    >
       {title && (
         <h3 className="text-lg font-semibold text-center flex items-center justify-center gap-2">
-          <Music className="w-5 h-5 text-emerald-600" />
+          <Music className="w-5 h-5 text-emerald-600" aria-hidden="true" />
           {title}
         </h3>
       )}

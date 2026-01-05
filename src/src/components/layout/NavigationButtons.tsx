@@ -39,8 +39,9 @@ export function NavigationButtons({
           onClick={onBack}
           disabled={backDisabled || isLoading}
           className="min-w-24"
+          aria-label={backLabel}
         >
-          <ChevronLeft className="w-4 h-4 mr-1" />
+          <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" />
           {backLabel}
         </Button>
       )}
@@ -53,16 +54,18 @@ export function NavigationButtons({
             'min-w-32 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600',
             !showBack && 'w-full'
           )}
+          aria-label={nextLabel}
+          aria-busy={isLoading}
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              処理中...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+              <span aria-live="polite">処理中...</span>
             </>
           ) : (
             <>
               {nextLabel}
-              <ChevronRight className="w-4 h-4 ml-1" />
+              <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
             </>
           )}
         </Button>

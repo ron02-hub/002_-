@@ -149,8 +149,11 @@ export default function AudioCheckPage() {
                 </h2>
               </div>
 
-              <p className="text-slate-600 text-sm">
+              <p id="audio-check-help" className="text-slate-600 text-sm">
                 再生した音声が何の音だったか、以下の選択肢から選んでください。
+                {!hasPlayed && (
+                  <span className="sr-only">音声を再生してから選択できます。</span>
+                )}
               </p>
 
               <RadioGroup
@@ -158,6 +161,9 @@ export default function AudioCheckPage() {
                 onValueChange={setSelectedAnswer}
                 disabled={!hasPlayed}
                 className="space-y-3"
+                aria-label="音声の種類を選択"
+                aria-required="true"
+                aria-describedby={!hasPlayed ? 'audio-check-help' : undefined}
               >
                 {AUDIO_OPTIONS.map((option) => (
                   <div
@@ -173,12 +179,12 @@ export default function AudioCheckPage() {
                     <RadioGroupItem value={option.id} id={option.id} />
                     <Label
                       htmlFor={option.id}
-                      className="flex-1 cursor-pointer font-medium text-slate-800"
+                      className="flex-1 cursor-pointer font-medium text-slate-800 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2 rounded"
                     >
                       {option.label}
                     </Label>
                     {selectedAnswer === option.id && (
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0" aria-hidden="true">
                         {option.isCorrect ? (
                           <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                         ) : (
@@ -195,9 +201,12 @@ export default function AudioCheckPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   className="p-4 bg-red-50 border border-red-200 rounded-lg"
+                  role="alert"
+                  aria-live="assertive"
+                  aria-atomic="true"
                 >
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
                     <div>
                       <h4 className="font-medium text-red-800 mb-1">
                         正しくありません
@@ -215,9 +224,12 @@ export default function AudioCheckPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
                 >
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
                     <div>
                       <h4 className="font-medium text-emerald-800 mb-1">
                         正解です！
@@ -245,10 +257,14 @@ export default function AudioCheckPage() {
             disabled={!isCorrectAnswer}
             size="lg"
             className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-medium disabled:opacity-50"
+            aria-describedby="continue-help-text"
           >
             音声評価を開始する
-            <ChevronRight className="w-5 h-5 ml-2" />
+            <ChevronRight className="w-5 h-5 ml-2" aria-hidden="true" />
           </Button>
+          <p id="continue-help-text" className="sr-only">
+            {!isCorrectAnswer ? '正しい答えを選択すると次へ進めます。' : '次へ進む準備ができました。'}
+          </p>
         </motion.div>
       </div>
     </SurveyLayout>

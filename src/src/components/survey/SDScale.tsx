@@ -32,14 +32,17 @@ export function SDScale({
     return '';
   };
 
+  const scaleId = `sd-scale-${leftLabel}-${rightLabel}`.replace(/\s+/g, '-').toLowerCase();
+
   return (
-    <div className={cn('space-y-4', className)}>
-      <div className="flex items-center justify-between">
+    <div className={cn('space-y-4', className)} role="group" aria-labelledby={`${scaleId}-label`}>
+      <div className="flex items-center justify-between" id={`${scaleId}-label`}>
         <Label className="text-sm font-medium text-slate-700 flex-1 text-left">
           {leftLabel}
         </Label>
-        <div className="flex-1 flex justify-center">
+        <div className="flex-1 flex justify-center" aria-live="polite" aria-atomic="true">
           <span className="text-xs text-slate-500 px-3 py-1 bg-slate-100 rounded-full">
+            <span className="sr-only">現在の値: </span>
             {getValueLabel(value)}
           </span>
         </div>
@@ -50,7 +53,7 @@ export function SDScale({
 
       <div className="relative">
         {/* スケール目盛り */}
-        <div className="flex justify-between mb-2 px-1">
+        <div className="flex justify-between mb-2 px-1" aria-hidden="true">
           {[-3, -2, -1, 0, 1, 2, 3].map((mark) => (
             <div
               key={mark}
@@ -71,10 +74,15 @@ export function SDScale({
           step={1}
           disabled={disabled}
           className="cursor-pointer"
+          aria-label={`${leftLabel}から${rightLabel}までの評価`}
+          aria-valuemin={-3}
+          aria-valuemax={3}
+          aria-valuenow={value}
+          aria-valuetext={getValueLabel(value)}
         />
 
         {/* 値表示 */}
-        <div className="flex justify-between mt-2 text-xs text-slate-500">
+        <div className="flex justify-between mt-2 text-xs text-slate-500" aria-hidden="true">
           <span>-3</span>
           <span className="font-medium text-slate-700">0</span>
           <span>+3</span>

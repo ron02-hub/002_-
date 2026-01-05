@@ -134,6 +134,8 @@ export default function ConsentPage() {
                             }))
                           }
                           className="mt-1"
+                          aria-required="true"
+                          aria-invalid={!agreements[item.key] && Object.values(agreements).some(Boolean)}
                         />
                         <div>
                           <Label
@@ -166,11 +168,15 @@ export default function ConsentPage() {
             disabled={!allAgreed}
             size="lg"
             className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-describedby="consent-help-text"
           >
             同意して次へ進む
-            <ChevronRight className="w-5 h-5 ml-2" />
+            <ChevronRight className="w-5 h-5 ml-2" aria-hidden="true" />
           </Button>
-          <p className="text-center text-sm text-slate-500 mt-4">
+          <p id="consent-help-text" className="text-center text-sm text-slate-500 mt-4" role="status">
+            {!allAgreed && (
+              <span className="sr-only">すべての項目に同意する必要があります。現在、</span>
+            )}
             すべての項目に同意いただくと次へ進めます
           </p>
         </motion.div>

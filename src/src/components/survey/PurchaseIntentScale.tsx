@@ -70,6 +70,8 @@ export function PurchaseIntentScale({
           onValueChange={(val) => onChange(parseInt(val))}
           disabled={disabled}
           className="space-y-3"
+          aria-label="購買意欲の評価"
+          aria-required="true"
         >
           {purchaseLabels.map((item) => (
             <div key={item.value}>
@@ -83,7 +85,7 @@ export function PurchaseIntentScale({
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 border rounded-lg cursor-pointer transition-colors',
                   'peer-data-[state=checked]:bg-emerald-50 peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:text-emerald-700',
-                  'hover:bg-slate-50',
+                  'hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
               >
